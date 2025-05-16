@@ -17,13 +17,15 @@ public enum ErrorStatus implements BaseErrorCode {
     private final String code;
     private final String message;
 
+    private final ErrorReasonDto cachedErrorReasonDto = ErrorReasonDto.builder()
+        .isSuccess(false)
+        .httpStatus(httpStatus)
+        .code(code)
+        .message(message)
+        .build();
+
     @Override
     public ErrorReasonDto getReasonHttpStatus() {
-        return ErrorReasonDto.builder().
-            isSuccess(false)
-            .httpStatus(httpStatus)
-            .code(code)
-            .message(message)
-            .build();
+        return cachedErrorReasonDto;
     }
 }

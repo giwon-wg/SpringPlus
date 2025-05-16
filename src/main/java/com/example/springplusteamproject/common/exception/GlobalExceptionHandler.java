@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ApiException.class)
-    public ResponseEntity<ApiResponse<ErrorReasonDto>> handleCustomException3(ApiException e) {
+    public ResponseEntity<ApiResponse<ErrorReasonDto>> handleApiException(ApiException e) {
         return ApiResponse.onFailure(e.getErrorCode());
     }
 }

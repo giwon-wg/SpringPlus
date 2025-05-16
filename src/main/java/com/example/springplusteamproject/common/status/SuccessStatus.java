@@ -1,5 +1,6 @@
 package com.example.springplusteamproject.common.status;
 
+import com.example.springplusteamproject.common.response.ErrorReasonDto;
 import com.example.springplusteamproject.common.response.ReasonDto;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -17,13 +18,15 @@ public enum SuccessStatus implements BaseCode {
     private final String code;
     private final String message;
 
+    private final ReasonDto cachedReasonDto = ReasonDto.builder()
+        .isSuccess(true)
+        .httpStatus(httpStatus)
+        .code(code)
+        .message(message)
+        .build();
+
     @Override
     public ReasonDto getReasonHttpStatus() {
-        return ReasonDto.builder().
-            isSuccess(true)
-            .httpStatus(httpStatus)
-            .code(code)
-            .message(message)
-            .build();
+        return cachedReasonDto;
     }
 }
