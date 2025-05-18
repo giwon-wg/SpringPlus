@@ -48,4 +48,14 @@ public class UserServiceImpl implements UserService{
             .orElseThrow(() -> new GlobalException(ErrorCode.USER_NOT_FOUND));
         return UserResponseDto.from(user);
     }
+
+    @Override
+    @Transactional
+    public void deleteMyAccount(CustomUserPrincipal principal) {
+        User user = userRepository.findByEmail(principal.getUsername())
+            .orElseThrow(()-> new GlobalException(ErrorCode.USER_NOT_FOUND));
+
+        user.validateDelete(); // 유저 삭제 여부 검증
+        user.delete(); // 유저 삭제(Soft Delete)
+    }
 }

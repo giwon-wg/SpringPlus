@@ -7,5 +7,5 @@ import com.example.springplusteamproject.security.CustomUserPrincipal;
 public interface UserService {
     void updateMyPassword(UpdatePasswordRequestDto requestDto, CustomUserPrincipal principal);
     UserResponseDto findUserByEmail(String email);
-//    void deleteUser(CustomUserPrincipal principal);
+    void deleteMyAccount(CustomUserPrincipal principal);
 }

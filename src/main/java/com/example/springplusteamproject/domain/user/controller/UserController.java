@@ -38,4 +38,11 @@ public class UserController {
         UserResponseDto responseDto = userService.findUserByEmail(principal.getUsername());
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
+
+    @DeleteMapping("/me")
+    public ResponseEntity<Void> deleteUser(@AuthenticationPrincipal CustomUserPrincipal principal) {
+
+        userService.deleteMyAccount(principal);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }
