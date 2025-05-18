@@ -38,7 +38,7 @@ public class Store extends BaseEntity {
     @Transient
     private UserDummy user;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "store_name", nullable = false, unique = true)
     private String name;
 
     @Column(nullable = false)

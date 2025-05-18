@@ -53,8 +53,7 @@ public class StoreService {
 
     public List<StoreResponseDto> getAllStores() {
 
-        return storeRepository.findAll().stream()
-            .filter(store -> !store.getDeleted())
+        return storeRepository.findByDeletedFalse().stream()
             .map(this::toResponseDto)
             .collect(Collectors.toList());
     }
