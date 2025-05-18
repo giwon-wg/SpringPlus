@@ -9,6 +9,7 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -53,9 +54,20 @@ public class JwtUtil {
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+            log.warn("JWT 만료됨: {}", token);
+        } catch (io.jsonwebtoken.SignatureException e) {
+            log.warn("JWT 서명 오류: {}", token);
+        } catch (io.jsonwebtoken.MalformedJwtException e) {
+            log.warn("JWT 형식 오류: {}", token);
         } catch (JwtException e) {
-            log.error("JWT 파싱 실패", e);
-            return null;
+            log.warn("기타 JWT 오류: {}", token);
         }
+        return null;
+    }
+
+    @PostConstruct
+    public void checkSecretKey() {
+        System.out.println("JwtUtil Loaded Secret Key: " + secretKey);
     }
 }

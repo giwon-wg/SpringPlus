@@ -25,6 +25,7 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+
         String authHeader = request.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -36,16 +37,19 @@ public class JwtFilter extends OncePerRequestFilter {
         log.info("Extracted Token: {}", token);
         Claims claims = jwtUtil.validateToken(token);
 
-        if (claims != null) {
+        if (claims == null) {
             log.warn("Invalid JWT token: {}", token);
-            String username = (String) claims.get("email");
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-
-            UsernamePasswordAuthenticationToken auth =
-                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-
-            SecurityContextHolder.getContext().setAuthentication(auth);
+            filterChain.doFilter(request, response); // 필수: 인증 실패 시 다음 필터로 넘기기만 함
+            return;
         }
+
+        String username = (String) claims.get("email");
+        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+        UsernamePasswordAuthenticationToken auth =
+            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+
+        SecurityContextHolder.getContext().setAuthentication(auth);
 
         filterChain.doFilter(request, response);
     }
