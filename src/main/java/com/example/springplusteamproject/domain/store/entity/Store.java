@@ -61,4 +61,8 @@ public class Store extends BaseEntity {
     @Column(nullable = false)
     private Boolean deleted = false;
 
+    public void setDeleted() {
+        this.deleted = true;
+    }
+
 }
