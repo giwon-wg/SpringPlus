@@ -29,7 +29,7 @@ public enum ErrorCode {
     USER_NOT_FOUND_ROLE(HttpStatus.NOT_FOUND, "권한 정보가 없습니다."),
     INVALID_USER_ROLE(HttpStatus.FORBIDDEN, "유효하지 않은 사용자 권한입니다."),
     ROLE_ADMIN_FORBIDDEN(HttpStatus.UNAUTHORIZED, "관리자 권한이 없습니다."),
-    ROLE_CONSUMER_FORBIDDEN(HttpStatus.UNAUTHORIZED, "주문 고객이 아닙니다."),
+    ROLE_CUSTOMER_FORBIDDEN(HttpStatus.UNAUTHORIZED, "주문 고객이 아닙니다."),
     ROLE_OWNER_FORBIDDEN(HttpStatus.UNAUTHORIZED, "매장 사장님이 아닙니다."),
 
     // JWT

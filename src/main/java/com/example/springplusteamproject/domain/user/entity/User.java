@@ -81,7 +81,7 @@ public class User extends BaseEntity {
     // 일반 고객 여부 검증
     public void validateCustomer() {
         if (userRole != UserRole.CUSTOMER) {
-            throw new GlobalException(ErrorCode.ROLE_CONSUMER_FORBIDDEN);
+            throw new GlobalException(ErrorCode.ROLE_CUSTOMER_FORBIDDEN);
         }
     }
 
