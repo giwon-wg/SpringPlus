@@ -8,12 +8,14 @@ import com.example.springplusteamproject.domain.user.entity.User;
 import com.example.springplusteamproject.domain.user.repository.UserRepository;
 import com.example.springplusteamproject.security.CustomUserPrincipal;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 
+@Slf4j(topic = "UserService")
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService{
@@ -26,6 +28,7 @@ public class UserServiceImpl implements UserService{
     public void updateMyPassword(UpdatePasswordRequestDto requestDto, CustomUserPrincipal principal) {
         // 기존 비밀번호와 같은 비밀번호로 요청이 들어오는 경우 예외 발생
         if (Objects.equals(requestDto.getOldPassword(), requestDto.getNewPassword())) {
+            log.warn("기존 비밀번호와 동일한 요청: 기존 비밀번호 입력 = {}, 신규 비밀번호 입력 = {}", requestDto.getOldPassword(), requestDto.getNewPassword());
             throw new ApiException(ErrorStatus.PASSWORD_DUPLICATED);
         }
 
@@ -35,6 +38,7 @@ public class UserServiceImpl implements UserService{
         user.validateDelete();
 
         if (!passwordEncoder.matches(requestDto.getOldPassword(), principal.getPassword())) {
+            log.warn("비밀번호 불일치: 비밀번호 확인 입력 = {}, 기존 비밀번호 = {}", requestDto.getOldPassword(), principal.getPassword());
             throw new ApiException(ErrorStatus.PASSWORD_NOT_MATCHED);
         }
 
