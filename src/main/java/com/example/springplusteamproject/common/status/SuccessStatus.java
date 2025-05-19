@@ -11,15 +11,15 @@ public enum SuccessStatus implements BaseCode {
 
     CUSTOM_SUCCESS_STATUS(HttpStatus.OK, "S1001", "Custom Success"),
 
-    ;
+
 
 
 
 
 
     // Auth A000
-
-
+    AUTH_SIGNUP_SUCCESS(HttpStatus.CREATED, "A002", "회원 가입에 성공했습니다."),
+    AUTH_LOGIN_SUCCESS(HttpStatus.OK, "A001", "로그인에 성공했습니다."),
 
 
 
@@ -48,9 +48,9 @@ public enum SuccessStatus implements BaseCode {
 
 
     // User U000
-
-
-
+    USER_PASSWORD_UPDATE_SUCCESS(HttpStatus.OK, "U001", "비밀번호 업데이트에 성공했습니다."),
+    USER_FIND_SUCCESS(HttpStatus.OK, "U001", "유저 조회에 성공했습니다."),
+    USER_DELETE_SUCCESS(HttpStatus.OK, "U001", "유저 삭제에 성공했습니다.");
 
 
 
