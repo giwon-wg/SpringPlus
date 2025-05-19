@@ -18,6 +18,7 @@ public enum ErrorCode {
     UNAUTHORIZED_ACCESS(HttpStatus.UNAUTHORIZED, "인증되지 않은 접근입니다. 로그인 후 시도해 주세요."),
     USER_EXIST_EMAIL(HttpStatus.CONFLICT, "이미 존재하는 이메일입니다."),
     USER_EXIST_NICKNAME(HttpStatus.CONFLICT, "이미 존재하는 닉네임입니다."),
+    USER_OWNER_BRN_REQUIRED(HttpStatus.BAD_REQUEST, "가게 주인은 사업자 등록번호를 반드시 입력해야 합니다."),
 
     // password
     PASSWORD_DUPLICATED(HttpStatus.BAD_REQUEST, "같은 비밀번호로 중복 요청할 수 없습니다"),

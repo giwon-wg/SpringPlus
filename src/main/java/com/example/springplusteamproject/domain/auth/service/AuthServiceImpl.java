@@ -17,12 +17,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class AuthServiceImpl {
+public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
+    @Override
     @Transactional
     public SignupResponseDto signup(SignupRequestDto requestDto) {
 
@@ -34,6 +35,12 @@ public class AuthServiceImpl {
             throw new GlobalException(ErrorCode.USER_EXIST_NICKNAME);
         }
 
+        if ("OWNER".equalsIgnoreCase(requestDto.getUserRole())) {
+            if (requestDto.getBrn() == null || requestDto.getBrn().trim().isEmpty()) {
+                throw new GlobalException(ErrorCode.USER_OWNER_BRN_REQUIRED);
+            }
+        }
+
         String encodedPassword = passwordEncoder.encode(requestDto.getPassword());
         UserRole userRole = UserRole.of(requestDto.getUserRole());
         User newUser = buildUser(requestDto, encodedPassword, userRole); //buildUser는 아래에 메서드로 구현함
@@ -42,10 +49,13 @@ public class AuthServiceImpl {
         return SignupResponseDto.from(savedUser);
     }
 
+    @Override
     @Transactional(readOnly = true)
     public LoginResponseDto login(LoginRequestDto requestDto) {
         User user = userRepository.findByEmail(requestDto.getEmail())
             .orElseThrow( ()-> new GlobalException(ErrorCode.USER_NOT_FOUND));
+
+        user.validateDelete();
 
         // 비밀번호 검증
         if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {

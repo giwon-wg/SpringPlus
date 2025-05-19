@@ -33,6 +33,8 @@ public class UserServiceImpl implements UserService{
         User user = userRepository.findByEmail(principal.getUsername())
             .orElseThrow(()-> new GlobalException(ErrorCode.USER_NOT_FOUND));
 
+        user.validateDelete();
+
         if (!passwordEncoder.matches(requestDto.getOldPassword(), principal.getPassword())) {
             throw new GlobalException(ErrorCode.PASSWORD_NOT_MATCHED);
         }
@@ -46,6 +48,9 @@ public class UserServiceImpl implements UserService{
     public UserResponseDto findUserByEmail(String email) {
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new GlobalException(ErrorCode.USER_NOT_FOUND));
+
+        user.validateDelete();
+
         return UserResponseDto.from(user);
     }
 
