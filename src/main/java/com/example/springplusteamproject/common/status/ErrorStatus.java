@@ -16,13 +16,19 @@ public enum ErrorStatus implements BaseErrorCode {
     private final HttpStatus httpStatus;
     private final String code;
     private final String message;
+    private final ErrorReasonDto cachedErrorReasonDto;
 
-    private final ErrorReasonDto cachedErrorReasonDto = ErrorReasonDto.builder()
-        .isSuccess(false)
-        .httpStatus(httpStatus)
-        .code(code)
-        .message(message)
-        .build();
+    ErrorStatus(HttpStatus httpStatus, String code, String message) {
+        this.httpStatus = httpStatus;
+        this.code = code;
+        this.message = message;
+        this.cachedErrorReasonDto = ErrorReasonDto.builder()
+            .isSuccess(false)
+            .httpStatus(httpStatus)
+            .code(code)
+            .message(message)
+            .build();
+    }
 
     @Override
     public ErrorReasonDto getReasonHttpStatus() {
