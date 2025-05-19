@@ -11,7 +11,7 @@ spring:
       matching-strategy: ant_path_matcher
 
   jackson:
-    property-naming-strategy: SNAKE_CASE
+#    property-naming-strategy: SNAKE_CASE
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
