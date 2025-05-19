@@ -1,10 +1,10 @@
 package com.example.springplusteamproject.domain.user.controller;
 
 import com.example.springplusteamproject.common.response.ApiResponse;
+import com.example.springplusteamproject.common.status.SuccessStatus;
 import com.example.springplusteamproject.domain.user.dto.request.UpdatePasswordRequestDto;
 import com.example.springplusteamproject.domain.user.dto.response.UserResponseDto;
 import com.example.springplusteamproject.domain.user.service.UserService;
-import com.example.springplusteamproject.domain.user.status.UserSuccessCode;
 import com.example.springplusteamproject.security.CustomUserPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -35,7 +35,7 @@ public class UserController {
     {
         log.info("oldPassword: {}, newPassword: {}", requestDto.getOldPassword(), requestDto.getNewPassword());
         userService.updateMyPassword(requestDto, principal);
-        return ApiResponse.onSuccess(UserSuccessCode.USER_PASSWORD_UPDATE_SUCCESS, null);
+        return ApiResponse.onSuccess(SuccessStatus.USER_PASSWORD_UPDATE_SUCCESS, null);
     }
 
 
@@ -48,7 +48,7 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserResponseDto>> findUser(@AuthenticationPrincipal CustomUserPrincipal principal) {
 
         UserResponseDto responseDto = userService.findUserByEmail(principal.getUsername());
-        return ApiResponse.onSuccess(UserSuccessCode.USER_FIND_SUCCESS, responseDto);
+        return ApiResponse.onSuccess(SuccessStatus.USER_FIND_SUCCESS, responseDto);
     }
 
 
@@ -61,6 +61,6 @@ public class UserController {
     public ResponseEntity<ApiResponse<Void>> deleteUser(@AuthenticationPrincipal CustomUserPrincipal principal) {
 
         userService.deleteMyAccount(principal);
-        return ApiResponse.onSuccess(UserSuccessCode.USER_DELETE_SUCCESS, null);
+        return ApiResponse.onSuccess(SuccessStatus.USER_DELETE_SUCCESS, null);
     }
 }

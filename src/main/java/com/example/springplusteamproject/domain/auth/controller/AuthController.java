@@ -1,12 +1,12 @@
 package com.example.springplusteamproject.domain.auth.controller;
 
 import com.example.springplusteamproject.common.response.ApiResponse;
+import com.example.springplusteamproject.common.status.SuccessStatus;
 import com.example.springplusteamproject.domain.auth.dto.request.LoginRequestDto;
 import com.example.springplusteamproject.domain.auth.dto.request.SignupRequestDto;
 import com.example.springplusteamproject.domain.auth.dto.response.LoginResponseDto;
 import com.example.springplusteamproject.domain.auth.dto.response.SignupResponseDto;
 import com.example.springplusteamproject.domain.auth.service.AuthServiceImpl;
-import com.example.springplusteamproject.domain.auth.status.AuthSuccessCode;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +31,7 @@ public class AuthController {
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<SignupResponseDto>> signup(@Valid @RequestBody SignupRequestDto requestDto) {
         SignupResponseDto responseDto = authService.signup(requestDto);
-        return ApiResponse.onSuccess(AuthSuccessCode.AUTH_SIGNUP_SUCCESS, responseDto);
+        return ApiResponse.onSuccess(SuccessStatus.AUTH_SIGNUP_SUCCESS, responseDto);
     }
 
     @Operation(
@@ -41,6 +41,6 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponseDto>> login(@Valid @RequestBody LoginRequestDto requestDto) {
         LoginResponseDto responseDto = authService.login(requestDto);
-        return ApiResponse.onSuccess(AuthSuccessCode.AUTH_LOGIN_SUCCESS, responseDto);
+        return ApiResponse.onSuccess(SuccessStatus.AUTH_LOGIN_SUCCESS, responseDto);
     }
 }
