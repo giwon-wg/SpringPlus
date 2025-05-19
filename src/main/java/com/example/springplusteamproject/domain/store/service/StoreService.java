@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.springplusteamproject.domain.store.dto.request.StoreRequestDto;
 import com.example.springplusteamproject.domain.store.dto.response.StoreResponseDto;
@@ -20,6 +21,7 @@ public class StoreService {
 
     private final StoreRepository storeRepository;
 
+    @Transactional
     public StoreResponseDto createStore(StoreRequestDto dto) {
 
         if (storeRepository.existsByNameAndDeletedFalse(dto.getName())) {
@@ -42,6 +44,7 @@ public class StoreService {
         return toResponseDto(saved);
     }
 
+    @Transactional
     public void deleteStore(Long id) {
 
         Store store = storeRepository.findByIdAndDeletedFalse(id)
@@ -51,6 +54,7 @@ public class StoreService {
         storeRepository.save(store);
     }
 
+    @Transactional(readOnly=true)
     public List<StoreResponseDto> getAllStores() {
 
         return storeRepository.findByDeletedFalse().stream()
@@ -58,6 +62,7 @@ public class StoreService {
             .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly=true)
     public StoreResponseDto getStoreById(Long id) {
 
         Store store = storeRepository.findByIdAndDeletedFalse(id)
@@ -65,7 +70,6 @@ public class StoreService {
 
         return toResponseDto(store);
     }
-
 
     private StoreResponseDto toResponseDto(Store store) {
         return StoreResponseDto.builder()
