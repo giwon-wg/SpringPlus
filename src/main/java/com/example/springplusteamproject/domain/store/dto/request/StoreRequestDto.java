@@ -23,7 +23,7 @@ public class StoreRequestDto {
     @NotBlank(message = "주소는 필수입니다.")
     private String address;
 
-    @Schema(description = "가게 이미지")
+    @Schema(description = "가게 이미지", example = "가게 이미지 링크")
     private String image;
 
     @Schema(description = "전화번호", example = "010-1234-5678")

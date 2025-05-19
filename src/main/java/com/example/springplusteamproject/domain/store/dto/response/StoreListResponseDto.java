@@ -7,15 +7,11 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class StoreResponseDto {
+public class StoreListResponseDto {
 
     private Long id;
 
     private String name;
-
-    private String address;
-
-    private String phoneNumber;
 
     private String image;
 
@@ -24,5 +20,4 @@ public class StoreResponseDto {
     private LocalTime openTime;
 
     private LocalTime closeTime;
-
 }

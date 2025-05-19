@@ -7,10 +7,13 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.springplusteamproject.common.exception.ApiException;
 import com.example.springplusteamproject.domain.store.dto.request.StoreRequestDto;
+import com.example.springplusteamproject.domain.store.dto.response.StoreListResponseDto;
 import com.example.springplusteamproject.domain.store.dto.response.StoreResponseDto;
 import com.example.springplusteamproject.domain.store.entity.Store;
 import com.example.springplusteamproject.domain.store.repository.StoreRepository;
+import com.example.springplusteamproject.domain.store.status.exception.StoreErrorCode;
 import com.example.springplusteamproject.temp.UserDummy;
 
 import lombok.RequiredArgsConstructor;
@@ -25,7 +28,7 @@ public class StoreService {
     public StoreResponseDto createStore(StoreRequestDto dto) {
 
         if (storeRepository.existsByNameAndDeletedFalse(dto.getName())) {
-            throw new IllegalArgumentException("이름 겹치는데요?");
+            throw new ApiException(StoreErrorCode.STORE_NAME_CONFLICT);
         }
 
         Store store = Store.builder()
@@ -48,17 +51,17 @@ public class StoreService {
     public void deleteStore(Long id) {
 
         Store store = storeRepository.findByIdAndDeletedFalse(id)
-            .orElseThrow(() -> new IllegalArgumentException("id가 없는데요?"));
+            .orElseThrow(() -> new ApiException(StoreErrorCode.STORE_NOT_FOUND));
 
         store.setDeleted();
         storeRepository.save(store);
     }
 
     @Transactional(readOnly=true)
-    public List<StoreResponseDto> getAllStores() {
+    public List<StoreListResponseDto> getAllStores() {
 
         return storeRepository.findByDeletedFalse().stream()
-            .map(this::toResponseDto)
+            .map(this::toListResponseDto)
             .collect(Collectors.toList());
     }
 
@@ -66,7 +69,7 @@ public class StoreService {
     public StoreResponseDto getStoreById(Long id) {
 
         Store store = storeRepository.findByIdAndDeletedFalse(id)
-            .orElseThrow(() -> new IllegalArgumentException("id가 없는데요?"));
+            .orElseThrow(() -> new ApiException(StoreErrorCode.STORE_NOT_FOUND));
 
         return toResponseDto(store);
     }
@@ -77,6 +80,28 @@ public class StoreService {
             .name(store.getName())
             .address(store.getAddress())
             .phoneNumber(store.getPhoneNumber())
+            .image(store.getImage())
+            .minOrderPrice(store.getMinOrderPrice())
+            .openTime(store.getOpenTime())
+            .closeTime(store.getCloseTime())
+            .build();
+    }
+
+    private StoreListResponseDto toListResponseDto(Store store) {
+        return StoreListResponseDto.builder()
+            .id(store.getId())
+            .name(store.getName())
+            .image(store.getImage())
+            .minOrderPrice(store.getMinOrderPrice())
+            .openTime(store.getOpenTime())
+            .closeTime(store.getCloseTime())
+            .build();
+    }
+
+    private StoreListResponseDto toListResponseDto(Store store) {
+        return StoreListResponseDto.builder()
+            .id(store.getId())
+            .name(store.getName())
             .minOrderPrice(store.getMinOrderPrice())
             .openTime(store.getOpenTime())
             .closeTime(store.getCloseTime())
