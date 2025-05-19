@@ -54,20 +54,6 @@ public class DiscountCoupon extends BaseEntity {
     @Column(nullable = false)
     private boolean isDeleted;
 
-    public static DiscountCoupon of(Store store, String couponName, Long discount, LocalDateTime issuedAt,
-                                     LocalDateTime expiresAt, Long quantity, Long stock) {
-        return DiscountCoupon.builder()
-            .store(store)
-            .couponName(couponName)
-            .discount(discount)
-            .issuedAt(issuedAt)
-            .expiresAt(expiresAt)
-            .quantity(quantity)
-            .stock(stock)
-            .isDeleted(false)
-            .build();
-    }
-
     public void delete() {
         this.isDeleted = true;
     }
