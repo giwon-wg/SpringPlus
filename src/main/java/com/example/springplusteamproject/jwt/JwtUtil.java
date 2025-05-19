@@ -1,9 +1,8 @@
 package com.example.springplusteamproject.jwt;
 
-import com.example.springplusteamproject.common.exception.ErrorCode;
-import com.example.springplusteamproject.common.exception.GlobalException;
+import com.example.springplusteamproject.common.exception.ApiException;
+import com.example.springplusteamproject.common.status.ErrorStatus;
 import com.example.springplusteamproject.domain.user.entity.User;
-import com.example.springplusteamproject.domain.user.entity.UserRole;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -44,7 +43,7 @@ public class JwtUtil {
         if (StringUtils.hasText(tokenValue) && tokenValue.startsWith(BEARER_PREFIX)) {
             return tokenValue.substring(BEARER_PREFIX.length());
         }
-        throw new GlobalException(ErrorCode.JWT_NOT_FOUND_TOKEN);
+        throw new ApiException(ErrorStatus.JWT_NOT_FOUND_TOKEN);
     }
 
     public Claims validateToken(String token) {

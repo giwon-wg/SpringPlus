@@ -1,7 +1,7 @@
 package com.example.springplusteamproject.domain.auth.service;
 
-import com.example.springplusteamproject.common.exception.ErrorCode;
-import com.example.springplusteamproject.common.exception.GlobalException;
+import com.example.springplusteamproject.common.status.ErrorStatus;
+import com.example.springplusteamproject.common.exception.ApiException;
 import com.example.springplusteamproject.domain.auth.dto.request.LoginRequestDto;
 import com.example.springplusteamproject.domain.auth.dto.request.SignupRequestDto;
 import com.example.springplusteamproject.domain.auth.dto.response.LoginResponseDto;
@@ -28,16 +28,16 @@ public class AuthServiceImpl implements AuthService {
     public SignupResponseDto signup(SignupRequestDto requestDto) {
 
         if (userRepository.existsByEmail(requestDto.getEmail())) {
-            throw new GlobalException(ErrorCode.USER_EXIST_EMAIL);
+            throw new ApiException(ErrorStatus.USER_EXIST_EMAIL);
         }
 
         if (userRepository.existsByNickname(requestDto.getNickname())) {
-            throw new GlobalException(ErrorCode.USER_EXIST_NICKNAME);
+            throw new ApiException(ErrorStatus.USER_EXIST_NICKNAME);
         }
 
         if ("OWNER".equalsIgnoreCase(requestDto.getUserRole())) {
             if (requestDto.getBrn() == null || requestDto.getBrn().trim().isEmpty()) {
-                throw new GlobalException(ErrorCode.USER_OWNER_BRN_REQUIRED);
+                throw new ApiException(ErrorStatus.USER_OWNER_BRN_REQUIRED);
             }
         }
 
@@ -53,13 +53,13 @@ public class AuthServiceImpl implements AuthService {
     @Transactional(readOnly = true)
     public LoginResponseDto login(LoginRequestDto requestDto) {
         User user = userRepository.findByEmail(requestDto.getEmail())
-            .orElseThrow( ()-> new GlobalException(ErrorCode.USER_NOT_FOUND));
+            .orElseThrow( ()-> new ApiException(ErrorStatus.USER_NOT_FOUND));
 
         user.validateDelete();
 
         // 비밀번호 검증
         if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
-            throw new GlobalException(ErrorCode.PASSWORD_NOT_MATCHED);
+            throw new ApiException(ErrorStatus.PASSWORD_NOT_MATCHED);
         }
 
         String bearerToken = jwtUtil.generateToken(user);
@@ -67,14 +67,20 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private User buildUser(SignupRequestDto requestDto, String encodedPassword, UserRole userRole) {
-        return User.builder()
+        User.UserBuilder builder = User.builder()
             .email(requestDto.getEmail())
             .nickname(requestDto.getNickname())
             .password(encodedPassword)
             .phone(requestDto.getPhone())
             .address(requestDto.getAddress())
-            .userRole(userRole)
-            .build();
+            .userRole(userRole);
+
+        // OWNER인 경우 brn 설정
+        if (userRole == UserRole.OWNER) {
+            builder.brn(requestDto.getBrn());
+        }
+
+        return builder.build();
     }
 
 }

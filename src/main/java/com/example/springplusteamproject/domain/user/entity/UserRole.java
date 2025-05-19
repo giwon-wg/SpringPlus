@@ -1,7 +1,7 @@
 package com.example.springplusteamproject.domain.user.entity;
 
-import com.example.springplusteamproject.common.exception.ErrorCode;
-import com.example.springplusteamproject.common.exception.GlobalException;
+import com.example.springplusteamproject.common.exception.ApiException;
+import com.example.springplusteamproject.common.status.ErrorStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -19,7 +19,7 @@ public enum UserRole {
         return Arrays.stream(UserRole.values())
             .filter(r->r.name().equalsIgnoreCase(role))
             .findFirst()
-            .orElseThrow(() -> new GlobalException(ErrorCode.INVALID_USER_ROLE));
+            .orElseThrow(() -> new ApiException(ErrorStatus.INVALID_USER_ROLE));
     }
 
 }

@@ -1,8 +1,8 @@
 package com.example.springplusteamproject.domain.user.entity;
 
 import com.example.springplusteamproject.common.entity.BaseEntity;
-import com.example.springplusteamproject.common.exception.ErrorCode;
-import com.example.springplusteamproject.common.exception.GlobalException;
+import com.example.springplusteamproject.common.exception.ApiException;
+import com.example.springplusteamproject.common.status.ErrorStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -60,28 +60,28 @@ public class User extends BaseEntity {
     // 삭제 검증 (삭제 되었다면 예외 발생)
     public void validateDelete() {
         if (this.isDeleted) {
-            throw new GlobalException(ErrorCode.DELETED_USER);
+            throw new ApiException(ErrorStatus.DELETED_USER);
         }
     }
 
     // 접근 권한 검증 (로그인한 유저의 id와 id가 다르면 예외 발생)
     public void validateAccess(long userId) {
         if (userId != this.id) {
-            throw new GlobalException(ErrorCode.FORBIDDEN);
+            throw new ApiException(ErrorStatus.FORBIDDEN);
         }
     }
 
     // 오너 여부 검증
     public void validateOwner() {
         if (userRole != UserRole.OWNER) {
-            throw new GlobalException(ErrorCode.ROLE_OWNER_FORBIDDEN);
+            throw new ApiException(ErrorStatus.ROLE_OWNER_FORBIDDEN);
         }
     }
 
     // 일반 고객 여부 검증
     public void validateCustomer() {
         if (userRole != UserRole.CUSTOMER) {
-            throw new GlobalException(ErrorCode.ROLE_CUSTOMER_FORBIDDEN);
+            throw new ApiException(ErrorStatus.ROLE_CUSTOMER_FORBIDDEN);
         }
     }
 

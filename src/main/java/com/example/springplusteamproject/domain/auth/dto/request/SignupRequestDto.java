@@ -39,7 +39,7 @@ public class SignupRequestDto {
     @JsonProperty("userRole")
     String userRole;
 
-    @Schema(description = "프로필 이미지")
+    @Schema(description = "프로필 이미지", example = "프로필 이미지 링크")
     String profileImage;
 
     @Schema(description = "사업자 등록번호", example = "123-13-13334")
