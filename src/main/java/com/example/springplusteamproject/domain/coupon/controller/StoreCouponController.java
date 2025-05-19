@@ -1,0 +1,31 @@
+package com.example.springplusteamproject.domain.coupon.controller;
+
+import com.example.springplusteamproject.common.response.ApiResponse;
+import com.example.springplusteamproject.common.status.SuccessStatus;
+import com.example.springplusteamproject.domain.coupon.dto.response.AvailableUserCouponResponseDto;
+import com.example.springplusteamproject.domain.coupon.service.UserCouponService;
+import com.example.springplusteamproject.security.CustomUserPrincipal;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/stores/{storeId}/coupons")
+public class StoreCouponController {
+
+    private final UserCouponService userCouponService;
+
+    @GetMapping()
+    public ResponseEntity<ApiResponse<List<AvailableUserCouponResponseDto>>> findAvailableUserCoupons(
+        @PathVariable Long storeId, @AuthenticationPrincipal CustomUserPrincipal principal) {
+
+        List<AvailableUserCouponResponseDto> responseDto = userCouponService.findAvailableUserCoupons(storeId, principal);
+        return ApiResponse.onSuccess(SuccessStatus.AVAILABLE_USER_COUPON_FIND_SUCCESS, responseDto);
+    }
+}
