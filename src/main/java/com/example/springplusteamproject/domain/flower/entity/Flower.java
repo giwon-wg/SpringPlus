@@ -53,10 +53,10 @@ public class Flower extends BaseEntity {
     private Season season;
 
     @Column(nullable = false)
-    private int price;
+    private Integer price;
 
     @Column(nullable = false)
-    private int stock;
+    private Integer stock;
 
     @Column(nullable = false)
     private LocalDateTime expirationDate;
@@ -79,6 +79,37 @@ public class Flower extends BaseEntity {
 
     public void setDeleted() {
         this.deleted = true;
+    }
+
+    public void update(FlowerRequestDto.Update dto) {
+
+        if (dto.getName() != null) {
+            this.name = dto.getName();
+        }
+
+        if (dto.getDescription() != null) {
+            this.description = dto.getDescription();
+        }
+
+        if (dto.getType() != null) {
+            this.type = dto.getType();
+        }
+
+        if (dto.getColor() != null) {
+            this.color = dto.getColor();
+        }
+
+        if (dto.getSeason() != null) {
+            this.season = dto.getSeason();
+        }
+
+        if (dto.getPrice() != null) {
+            this.price = dto.getPrice();
+        }
+
+        if (dto.getStock() != null) {
+            this.stock = dto.getStock();
+        }
     }
 
 }

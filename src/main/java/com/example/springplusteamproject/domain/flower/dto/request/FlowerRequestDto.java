@@ -37,11 +37,11 @@ public class FlowerRequestDto {
 
         @Schema(description = "가격", example = "700")
         @NotBlank(message = "가격은 필수입니다.")
-        private int price;
+        private Integer price;
 
         @Schema(description = "재고", example = "100")
         @NotBlank(message = "재고는 필수입니다.")
-        private int stock;
+        private Integer stock;
 
         @Schema(description = "입고일", example = "2025-05-19")
         @NotBlank(message = "입고일은 필수입니다.")
@@ -68,10 +68,10 @@ public class FlowerRequestDto {
         private Season season;
 
         @Schema(description = "가격", example = "700")
-        private int price;
+        private Integer price;
 
         @Schema(description = "재고", example = "100")
-        private int stock;
+        private Integer stock;
     }
 
 }
