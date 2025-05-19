@@ -4,7 +4,7 @@ import com.example.springplusteamproject.domain.flower.entity.Flower;
 import com.example.springplusteamproject.domain.flower.enums.Color;
 import com.example.springplusteamproject.domain.flower.enums.Season;
 import com.example.springplusteamproject.domain.flower.enums.Type;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -41,7 +41,7 @@ public class FlowerResponseDto {
 
         private int stock;
 
-        private LocalDateTime expirationDate;
+        private LocalDate expirationDate;
 
         public static Get toDto(Flower flower) {
             return Get.builder()

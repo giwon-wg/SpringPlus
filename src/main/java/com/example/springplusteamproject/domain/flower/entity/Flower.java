@@ -8,6 +8,8 @@ import com.example.springplusteamproject.domain.flower.enums.Type;
 import com.example.springplusteamproject.domain.store.entity.Store;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -15,11 +17,12 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 
 @Getter
 @Entity
@@ -44,12 +47,15 @@ public class Flower extends BaseEntity {
     private String description;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private Type type;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private Color color;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private Season season;
 
     @Column(nullable = false)
@@ -59,8 +65,11 @@ public class Flower extends BaseEntity {
     private Integer stock;
 
     @Column(nullable = false)
-    private LocalDateTime expirationDate;
+    private LocalDate expirationDate;
 
+    @Builder.Default
+    @ColumnDefault("false")
+    @Column(nullable = false)
     private Boolean deleted = false;
 
     public static Flower from(Store store, FlowerRequestDto.Create dto) {
@@ -73,7 +82,7 @@ public class Flower extends BaseEntity {
             .season(dto.getSeason())
             .price(dto.getPrice())
             .stock(dto.getStock())
-            .expirationDate(dto.getExpirationDate())
+            .expirationDate(LocalDate.parse(dto.getExpirationDate()))
             .build();
     }
 

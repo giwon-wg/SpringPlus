@@ -50,7 +50,7 @@ public enum SuccessStatus implements BaseCode {
     // User U000
     USER_PASSWORD_UPDATE_SUCCESS(HttpStatus.OK, "U001", "비밀번호 업데이트에 성공했습니다."),
     USER_FIND_SUCCESS(HttpStatus.OK, "U001", "유저 조회에 성공했습니다."),
-    USER_DELETE_SUCCESS(HttpStatus.OK, "U001", "유저 삭제에 성공했습니다.");
+    USER_DELETE_SUCCESS(HttpStatus.OK, "U001", "유저 삭제에 성공했습니다."),
 
 
 
@@ -108,8 +108,8 @@ public enum SuccessStatus implements BaseCode {
 
 
     // Flower F000
-
-
+    FLOWER_CREATE_SUCCESS(HttpStatus.CREATED, "F002", "꽃 상품 등록에 성공했습니다."),
+    FLOWER_OPERATION_SUCCESS(HttpStatus.OK, "F001", "꽃 상품에 대한 요청이 성공적으로 처리되었습니다."),
 
 
 
@@ -196,7 +196,7 @@ public enum SuccessStatus implements BaseCode {
 
 
 
-
+    ;
     // 본 코드
     private final HttpStatus httpStatus;
     private final String code;
