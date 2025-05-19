@@ -1,6 +1,7 @@
 package com.example.springplusteamproject.domain.flower.entity;
 
 import com.example.springplusteamproject.common.entity.BaseEntity;
+import com.example.springplusteamproject.domain.flower.dto.request.FlowerRequestDto;
 import com.example.springplusteamproject.domain.flower.enums.Color;
 import com.example.springplusteamproject.domain.flower.enums.Season;
 import com.example.springplusteamproject.domain.flower.enums.Type;
@@ -14,7 +15,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -58,10 +59,23 @@ public class Flower extends BaseEntity {
     private int stock;
 
     @Column(nullable = false)
-    private LocalDate expirationDate;
+    private LocalDateTime expirationDate;
 
-    @Column(nullable = false)
     private Boolean deleted = false;
+
+    public static Flower from(Store store, FlowerRequestDto.Create dto) {
+        return Flower.builder()
+            .store(store)
+            .name(dto.getName())
+            .description(dto.getDescription())
+            .type(dto.getType())
+            .color(dto.getColor())
+            .season(dto.getSeason())
+            .price(dto.getPrice())
+            .stock(dto.getStock())
+            .expirationDate(dto.getExpirationDate())
+            .build();
+    }
 
     public void setDeleted() {
         this.deleted = true;
