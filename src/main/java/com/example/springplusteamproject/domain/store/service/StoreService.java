@@ -80,6 +80,18 @@ public class StoreService {
             .name(store.getName())
             .address(store.getAddress())
             .phoneNumber(store.getPhoneNumber())
+            .image(store.getImage())
+            .minOrderPrice(store.getMinOrderPrice())
+            .openTime(store.getOpenTime())
+            .closeTime(store.getCloseTime())
+            .build();
+    }
+
+    private StoreListResponseDto toListResponseDto(Store store) {
+        return StoreListResponseDto.builder()
+            .id(store.getId())
+            .name(store.getName())
+            .image(store.getImage())
             .minOrderPrice(store.getMinOrderPrice())
             .openTime(store.getOpenTime())
             .closeTime(store.getCloseTime())
