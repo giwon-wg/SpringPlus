@@ -51,6 +51,7 @@ public enum SuccessStatus implements BaseCode {
     USER_PASSWORD_UPDATE_SUCCESS(HttpStatus.OK, "U001", "비밀번호 업데이트에 성공했습니다."),
     USER_FIND_SUCCESS(HttpStatus.OK, "U001", "유저 조회에 성공했습니다."),
     USER_DELETE_SUCCESS(HttpStatus.OK, "U001", "유저 삭제에 성공했습니다."),
+    USER_RESPONSE_SUCCESS(HttpStatus.OK, "U001", "유저 응답에 성공했습니다."),
 
 
 
@@ -77,8 +78,9 @@ public enum SuccessStatus implements BaseCode {
 
 
 
-    // Store S000
-
+    // Store S000 80 ~ 110
+    STORE_SUCCESS(HttpStatus.OK, "S001", "요청을 성공적으로 수행하였습니다."),
+    STORE_CREATED_SUCCESS(HttpStatus.CREATED, "S002", "요청한 정보를 작성하였습니다."),
 
 
 
@@ -140,7 +142,7 @@ public enum SuccessStatus implements BaseCode {
     // Coupon C000
     DISCOUNT_COUPON_CREATE_SUCCESS(HttpStatus.CREATED, "C002", "할인 쿠폰 등록에 성공했습니다."),
     USER_COUPON_FIND_SUCCESS(HttpStatus.OK, "C001", "쿠폰 조회에 성공했습니다."),
-    USER_COUPON_ISSUE_SUCCESS(HttpStatus.OK, "C001", "할인 쿠폰 발급에 성공했습니다.");
+    USER_COUPON_ISSUE_SUCCESS(HttpStatus.OK, "C001", "할인 쿠폰 발급에 성공했습니다."),
 
 
 
@@ -198,6 +200,7 @@ public enum SuccessStatus implements BaseCode {
 
 
 
+    ;
     // 본 코드
     private final HttpStatus httpStatus;
     private final String code;
