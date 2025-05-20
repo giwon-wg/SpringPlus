@@ -11,10 +11,12 @@ import com.example.springplusteamproject.domain.user.entity.UserRole;
 import com.example.springplusteamproject.domain.user.repository.UserRepository;
 import com.example.springplusteamproject.jwt.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j(topic = "AuthService")
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -28,15 +30,18 @@ public class AuthServiceImpl implements AuthService {
     public SignupResponseDto signup(SignupRequestDto requestDto) {
 
         if (userRepository.existsByEmail(requestDto.getEmail())) {
-            throw new ApiException(ErrorStatus.USER_EXIST_EMAIL);
+            log.warn("중복 이메일 요청 감지: {}", requestDto.getEmail());
+            throw new ApiException(ErrorStatus.USER_EXIST);
         }
 
         if (userRepository.existsByNickname(requestDto.getNickname())) {
-            throw new ApiException(ErrorStatus.USER_EXIST_NICKNAME);
+            log.warn("중복 닉네임 요청 감지: {}", requestDto.getNickname());
+            throw new ApiException(ErrorStatus.USER_EXIST);
         }
 
         if ("OWNER".equalsIgnoreCase(requestDto.getUserRole())) {
             if (requestDto.getBrn() == null || requestDto.getBrn().trim().isEmpty()) {
+                log.warn("사업자 등록번호 누락: UserRole = {}", requestDto.getUserRole());
                 throw new ApiException(ErrorStatus.USER_OWNER_BRN_REQUIRED);
             }
         }
@@ -59,6 +64,7 @@ public class AuthServiceImpl implements AuthService {
 
         // 비밀번호 검증
         if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
+            log.warn("입력 비밀번호 미일치");
             throw new ApiException(ErrorStatus.PASSWORD_NOT_MATCHED);
         }
 
