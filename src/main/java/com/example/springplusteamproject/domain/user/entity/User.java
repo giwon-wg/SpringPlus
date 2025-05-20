@@ -84,5 +84,4 @@ public class User extends BaseEntity {
             throw new ApiException(ErrorStatus.ROLE_CUSTOMER_FORBIDDEN);
         }
     }
-
 }
