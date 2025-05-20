@@ -33,13 +33,11 @@ public class DiscountCouponServiceImpl implements DiscountCouponService {
         user.validateDelete();
         user.validateOwner();
 
-        // TODO store의 예외 코드 추가되면 해당 예외 코드로 수정
         Store store = storeRepository.findByIdAndDeletedFalse(storeId)
-            .orElseThrow(() -> new ApiException(ErrorStatus.FORBIDDEN));
-        // TODO store의 인가 처리 끝나면 추가
-//        if (!Objects.equals(user.getId(), store.getUser().getId())) {
-//            throw new ApiException(ErrorStatus.ROLE_ADMIN_FORBIDDEN);
-//        }
+            .orElseThrow(() -> new ApiException(ErrorStatus.STORE_NOT_FOUND));
+        if (!Objects.equals(user.getId(), store.getUser().getId())) {
+            throw new ApiException(ErrorStatus.ROLE_OWNER_FORBIDDEN);
+        }
 
         DiscountCoupon discountCoupon = createDiscountCoupon(store, requestDto);
         DiscountCoupon savedDiscountCoupon = discountCouponRepository.save(discountCoupon);
