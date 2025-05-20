@@ -139,7 +139,7 @@ public enum SuccessStatus implements BaseCode {
 
     // Coupon C000
     DISCOUNT_COUPON_CREATE_SUCCESS(HttpStatus.CREATED, "C002", "할인 쿠폰 등록에 성공했습니다."),
-    AVAILABLE_USER_COUPON_FIND_SUCCESS(HttpStatus.OK, "C001", "발급 가능한 쿠폰 조회에 성공했습니다."),
+    USER_COUPON_FIND_SUCCESS(HttpStatus.OK, "C001", "쿠폰 조회에 성공했습니다."),
     USER_COUPON_ISSUE_SUCCESS(HttpStatus.OK, "C001", "할인 쿠폰 발급에 성공했습니다.");
 
 

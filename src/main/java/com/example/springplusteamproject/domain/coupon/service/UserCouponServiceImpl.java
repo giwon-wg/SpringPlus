@@ -44,7 +44,8 @@ public class UserCouponServiceImpl implements UserCouponService {
 
     @Override
     @Transactional(readOnly = true)
-    public AvailableUserCouponResponseDto findAvailableUserCoupon(Long storeId, Long couponId, CustomUserPrincipal principal) {
+    public AvailableUserCouponResponseDto findAvailableUserCoupon(Long storeId, Long couponId,
+                                                                  CustomUserPrincipal principal) {
 
         User user = validateActivateUser(principal.getUsername());
         validateCouponNotIssued(user.getId(), couponId);
@@ -70,6 +71,18 @@ public class UserCouponServiceImpl implements UserCouponService {
         availableCoupon.decreaseStock();
 
         return UserCouponIssueResponseDto.from(availableCoupon, savedCoupon);
+    }
+
+    @Override
+    public List<UserCouponIssueResponseDto> findMyUserCoupons(CustomUserPrincipal principal) {
+
+        User user = validateActivateUser(principal.getUsername());
+
+        List<UserCoupon> myUserCouponList = userCouponRepository.findAllByUser_id(user.getId());
+
+        return myUserCouponList.stream()
+            .map(userCoupon -> UserCouponIssueResponseDto.from(userCoupon.getDiscountCoupon(), userCoupon))
+            .collect(Collectors.toList());
     }
 
     private User validateActivateUser(String username) {

@@ -29,7 +29,7 @@ public class StoreCouponController {
 
         List<AvailableUserCouponResponseDto> responseDto = userCouponService.findAvailableUserCoupons(storeId,
             principal);
-        return ApiResponse.onSuccess(SuccessStatus.AVAILABLE_USER_COUPON_FIND_SUCCESS, responseDto);
+        return ApiResponse.onSuccess(SuccessStatus.USER_COUPON_FIND_SUCCESS, responseDto);
     }
 
     @GetMapping("/{couponId}")
@@ -39,7 +39,7 @@ public class StoreCouponController {
 
         AvailableUserCouponResponseDto responseDto = userCouponService.findAvailableUserCoupon(storeId, couponId,
             principal);
-        return ApiResponse.onSuccess(SuccessStatus.AVAILABLE_USER_COUPON_FIND_SUCCESS, responseDto);
+        return ApiResponse.onSuccess(SuccessStatus.USER_COUPON_FIND_SUCCESS, responseDto);
     }
 
     @PostMapping("/{couponId}")

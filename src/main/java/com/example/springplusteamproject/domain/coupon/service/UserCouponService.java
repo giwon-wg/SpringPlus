@@ -12,4 +12,6 @@ public interface UserCouponService {
     AvailableUserCouponResponseDto findAvailableUserCoupon(Long storeId, Long couponId, CustomUserPrincipal principal);
 
     UserCouponIssueResponseDto issueUserCoupon(Long storeId, Long couponId, CustomUserPrincipal principal);
+
+    List<UserCouponIssueResponseDto> findMyUserCoupons(CustomUserPrincipal principal);
 }
