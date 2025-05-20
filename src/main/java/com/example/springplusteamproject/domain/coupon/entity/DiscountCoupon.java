@@ -1,6 +1,8 @@
 package com.example.springplusteamproject.domain.coupon.entity;
 
 import com.example.springplusteamproject.common.entity.BaseEntity;
+import com.example.springplusteamproject.common.exception.ApiException;
+import com.example.springplusteamproject.common.status.ErrorStatus;
 import com.example.springplusteamproject.domain.store.entity.Store;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -56,5 +58,12 @@ public class DiscountCoupon extends BaseEntity {
 
     public void delete() {
         this.isDeleted = true;
+    }
+
+    public void decreaseStock() {
+        if (this.stock <= 0) {
+            throw new ApiException(ErrorStatus.COUPON_OUT_OF_STOCK);
+        }
+        this.stock--;
     }
 }

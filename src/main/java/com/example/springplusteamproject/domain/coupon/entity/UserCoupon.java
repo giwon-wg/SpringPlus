@@ -42,10 +42,10 @@ public class UserCoupon {
     @Column(nullable = false)
     private boolean isUsed;
 
-    @Column(nullable = false)
     private LocalDateTime usedAt;
 
     public void useCoupon() {
         this.isUsed = true;
+        this.usedAt = LocalDateTime.now();
     }
 }

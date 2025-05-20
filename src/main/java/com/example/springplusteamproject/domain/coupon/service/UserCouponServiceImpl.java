@@ -3,7 +3,9 @@ package com.example.springplusteamproject.domain.coupon.service;
 import com.example.springplusteamproject.common.exception.ApiException;
 import com.example.springplusteamproject.common.status.ErrorStatus;
 import com.example.springplusteamproject.domain.coupon.dto.response.AvailableUserCouponResponseDto;
+import com.example.springplusteamproject.domain.coupon.dto.response.UserCouponIssueResponseDto;
 import com.example.springplusteamproject.domain.coupon.entity.DiscountCoupon;
+import com.example.springplusteamproject.domain.coupon.entity.UserCoupon;
 import com.example.springplusteamproject.domain.coupon.repository.DiscountCouponRepository;
 import com.example.springplusteamproject.domain.coupon.repository.UserCouponRepository;
 import com.example.springplusteamproject.domain.store.repository.StoreRepository;
@@ -45,13 +47,29 @@ public class UserCouponServiceImpl implements UserCouponService {
     public AvailableUserCouponResponseDto findAvailableUserCoupon(Long storeId, Long couponId, CustomUserPrincipal principal) {
 
         User user = validateActivateUser(principal.getUsername());
-        isCouponAlreadyIssued(user.getId(), couponId);
+        validateCouponNotIssued(user.getId(), couponId);
 
         validateActivateStore(storeId);
-        DiscountCoupon availableCoupon = discountCouponRepository.findAvailableCoupon(storeId, couponId)
-            .orElseThrow(() -> new ApiException(ErrorStatus.COUPON_NOT_FOUND));
+        DiscountCoupon availableCoupon = validateAvailableCoupon(storeId, couponId);
 
         return AvailableUserCouponResponseDto.from(availableCoupon);
+    }
+
+    @Override
+    @Transactional
+    public UserCouponIssueResponseDto issueUserCoupon(Long storeId, Long couponId, CustomUserPrincipal principal) {
+
+        User user = validateActivateUser(principal.getUsername());
+        validateCouponNotIssued(user.getId(), couponId);
+
+        validateActivateStore(storeId);
+        DiscountCoupon availableCoupon = validateAvailableCoupon(storeId, couponId);
+
+        UserCoupon issueCoupon = createUserCoupon(user, availableCoupon);
+        UserCoupon savedCoupon = userCouponRepository.save(issueCoupon);
+        availableCoupon.decreaseStock();
+
+        return UserCouponIssueResponseDto.from(availableCoupon, savedCoupon);
     }
 
     private User validateActivateUser(String username) {
@@ -63,16 +81,32 @@ public class UserCouponServiceImpl implements UserCouponService {
         return user;
     }
 
+    private DiscountCoupon validateAvailableCoupon(Long storeId, Long couponId) {
+
+        DiscountCoupon availableCoupon = discountCouponRepository.findAvailableCoupon(storeId, couponId)
+            .orElseThrow(() -> new ApiException(ErrorStatus.COUPON_NOT_FOUND));
+
+        return availableCoupon;
+    }
+
     private void validateActivateStore(Long storeId) {
 
         storeRepository.findByIdAndDeletedFalse(storeId).orElseThrow(() -> new ApiException(ErrorStatus.FORBIDDEN));
     }
 
-    private void isCouponAlreadyIssued(Long userId, Long couponId) {
+    private void validateCouponNotIssued(Long userId, Long couponId) {
 
         boolean alreadyIssued = userCouponRepository.existsByUser_IdAndDiscountCoupon_Id(userId, couponId);
         if (alreadyIssued) {
             throw new ApiException(ErrorStatus.COUPON_ALREADY_ISSUED);
         }
+    }
+
+    private UserCoupon createUserCoupon(User user, DiscountCoupon discountCoupon) {
+        return UserCoupon.builder()
+            .user(user)
+            .discountCoupon(discountCoupon)
+            .isUsed(false)
+            .build();
     }
 }
