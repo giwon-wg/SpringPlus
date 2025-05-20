@@ -1,6 +1,5 @@
-package com.example.springplusteamproject.jwt;
+package com.example.springplusteamproject.security;
 
-import com.example.springplusteamproject.security.CustomUserDetailsService;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

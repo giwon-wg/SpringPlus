@@ -1,4 +1,4 @@
-package com.example.springplusteamproject.jwt;
+package com.example.springplusteamproject.security;
 
 import com.example.springplusteamproject.common.exception.ApiException;
 import com.example.springplusteamproject.common.status.ErrorStatus;
