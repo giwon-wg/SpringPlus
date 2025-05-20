@@ -172,7 +172,7 @@ public enum ErrorStatus implements BaseErrorCode {
 
 
     // Order O000
-
+    INVALID_ORDER_QUANTITY(HttpStatus.BAD_REQUEST, "O004", "수량은 1개 이상이어야 합니다."),
 
 
 
