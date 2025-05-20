@@ -79,7 +79,7 @@ public class UserCouponServiceImpl implements UserCouponService {
 
         User user = validateActivateUser(principal.getUsername());
 
-        List<UserCoupon> myUserCouponList = userCouponRepository.findAllByUser_id(user.getId());
+        List<UserCoupon> myUserCouponList = userCouponRepository.findAllByUser_idAndIsUsedFalse(user.getId());
 
         return myUserCouponList.stream()
             .map(userCoupon -> UserCouponIssueResponseDto.from(userCoupon.getDiscountCoupon(), userCoupon))

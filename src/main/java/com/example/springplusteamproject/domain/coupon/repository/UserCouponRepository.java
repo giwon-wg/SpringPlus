@@ -15,5 +15,5 @@ public interface UserCouponRepository extends JpaRepository<UserCoupon, Long> {
     boolean existsByUser_IdAndDiscountCoupon_Id(Long userId, Long couponId);
 
     @EntityGraph(attributePaths = "discountCoupon")
-    List<UserCoupon> findAllByUser_id(Long userId);
+    List<UserCoupon> findAllByUser_idAndIsUsedFalse(Long userId);
 }
