@@ -10,12 +10,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.springplusteamproject.common.response.ApiResponse;
 import com.example.springplusteamproject.common.status.SuccessStatus;
-import com.example.springplusteamproject.domain.auth.dto.model.AuthUser;
 import com.example.springplusteamproject.domain.store.dto.request.StoreCheckNameRequestDto;
 import com.example.springplusteamproject.domain.store.dto.request.StoreRequestDto;
 import com.example.springplusteamproject.domain.store.dto.response.StoreListResponseDto;
@@ -72,7 +70,6 @@ public class StoreController {
         description = "모든 가게를 조회합니다.",
         security = {@SecurityRequirement(name = "bearerAuth")}
     )
-    @PreAuthorize("hasAnyRole('OWNER')")
     @GetMapping("/stores")
     public ResponseEntity<ApiResponse<List<StoreListResponseDto>>> findStore() {
         return ApiResponse.onSuccess(SuccessStatus.STORE_SUCCESS, storeService.getAllStores());
@@ -83,7 +80,6 @@ public class StoreController {
         description = "id를 기반으로 가게를 조회합니다.",
         security = {@SecurityRequirement(name = "bearerAuth")}
     )
-    @PreAuthorize("hasAnyRole('OWNER')")
     @GetMapping("/stores/{storeId}")
     public ResponseEntity<ApiResponse<StoreResponseDto>> getStoreById(
         @PathVariable Long storeId

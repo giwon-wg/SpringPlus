@@ -6,7 +6,6 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.example.springplusteamproject.domain.store.dto.response.StoreResponseDto;
 import com.example.springplusteamproject.domain.store.entity.Store;
 
 @Repository

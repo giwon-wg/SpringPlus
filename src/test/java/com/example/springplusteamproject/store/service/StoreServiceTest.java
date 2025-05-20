@@ -1,4 +1,4 @@
-package com.example.springplusteamproject.store;
+package com.example.springplusteamproject.store.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import com.example.springplusteamproject.common.exception.ApiException;
+import com.example.springplusteamproject.domain.store.dto.request.StoreCheckNameRequestDto;
 import com.example.springplusteamproject.domain.store.dto.request.StoreRequestDto;
 import com.example.springplusteamproject.domain.store.dto.response.StoreListResponseDto;
 import com.example.springplusteamproject.domain.store.dto.response.StoreResponseDto;
@@ -21,7 +22,6 @@ import com.example.springplusteamproject.domain.store.repository.StoreRepository
 import com.example.springplusteamproject.domain.store.service.StoreServiceImpl;
 import com.example.springplusteamproject.domain.user.entity.User;
 import com.example.springplusteamproject.security.CustomUserPrincipal;
-import com.example.springplusteamproject.temp.UserDummy;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
@@ -119,6 +119,31 @@ class StoreServiceTest {
             "18:00"
         );
         when(storeRepository.existsByNameAndDeletedFalse(dto.getName())).thenReturn(true);
+
+        CustomUserPrincipal principal = new CustomUserPrincipal(user);
+
+        // when & then
+        assertThrows(ApiException.class, () -> storeService.createStore(dto, principal));
+    }
+
+    @Test
+    void 가게_생성_가게_보유_예외() {
+        // given
+        StoreRequestDto dto = new StoreRequestDto(
+            "튤립 화원",
+            "부산광역시",
+            "이미지",
+            "010-5555-5555",
+            20000L,
+            "10:00",
+            "19:00"
+        );
+
+        when(storeRepository.existsByNameAndDeletedFalse(dto.getName()))
+            .thenReturn(false);
+
+        when(storeRepository.existsByUserIdAndDeletedFalse(user.getId()))
+            .thenReturn(true);
 
         CustomUserPrincipal principal = new CustomUserPrincipal(user);
 
@@ -231,5 +256,47 @@ class StoreServiceTest {
 
         // when & then
         assertThrows(ApiException.class, () -> storeService.getStoreById(999L));
+    }
+
+    @Test
+    void 상호명_사용가능() {
+        // given
+        String name = "튤립화원";
+        StoreCheckNameRequestDto dto = new StoreCheckNameRequestDto(name);
+        when(storeRepository.existsByNameAndDeletedFalse(name)).thenReturn(false);
+
+        // when
+        String result = storeService.checkingName(dto);
+
+        // then
+        assertThat(result).isEqualTo("사용 가능한 상호명입니다.");
+    }
+
+    @Test
+    void 상호명_중복() {
+        // given
+        String name = "장미화원";
+        StoreCheckNameRequestDto dto = new StoreCheckNameRequestDto(name);
+        when(storeRepository.existsByNameAndDeletedFalse(name)).thenReturn(true);
+
+        // when
+        String result = storeService.checkingName(dto);
+
+        // then
+        assertThat(result).isEqualTo("이미 존재하는 상호명입니다.");
+    }
+
+    @Test
+    void 상호명_금칙어필터() {
+        // given
+        String name = "운영자화원";
+        StoreCheckNameRequestDto dto = new StoreCheckNameRequestDto(name);
+        when(storeRepository.existsByNameAndDeletedFalse(name)).thenReturn(false);
+
+        // when
+        String result = storeService.checkingName(dto);
+
+        // then
+        assertThat(result).isEqualTo("부적절한 단어가 포함되어 있습니다.");
     }
 }

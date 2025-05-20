@@ -2,7 +2,6 @@ package com.example.springplusteamproject.domain.store.service;
 
 import java.util.List;
 
-import com.example.springplusteamproject.domain.auth.dto.model.AuthUser;
 import com.example.springplusteamproject.domain.store.dto.request.StoreCheckNameRequestDto;
 import com.example.springplusteamproject.domain.store.dto.request.StoreRequestDto;
 import com.example.springplusteamproject.domain.store.dto.response.StoreListResponseDto;
