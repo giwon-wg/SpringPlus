@@ -19,6 +19,8 @@ import com.example.springplusteamproject.domain.store.dto.response.StoreResponse
 import com.example.springplusteamproject.domain.store.entity.Store;
 import com.example.springplusteamproject.domain.store.repository.StoreRepository;
 import com.example.springplusteamproject.domain.store.service.StoreServiceImpl;
+import com.example.springplusteamproject.domain.user.entity.User;
+import com.example.springplusteamproject.security.CustomUserPrincipal;
 import com.example.springplusteamproject.temp.UserDummy;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -32,10 +34,21 @@ class StoreServiceTest {
 
     private Store store;
 
+    private User user;
+
     @BeforeEach
     void SetUp() {
         MockitoAnnotations.openMocks(this);
         storeService = new StoreServiceImpl(storeRepository);
+
+        user = User.builder()
+            .id(1L)
+            .address("서울특별시")
+            .brn("테스트")
+            .email("email@test.com")
+            .image("이미지")
+            .nickname("다람지")
+            .build();
 
         store = Store.builder()
             .id(1L)
@@ -46,7 +59,7 @@ class StoreServiceTest {
             .openTime(LocalTime.of(9, 0))
             .closeTime(LocalTime.of(18, 0))
             .deleted(false)
-            .user(UserDummy.INSTANCE)
+            .user(user)
             .build();
     }
 
@@ -74,13 +87,14 @@ class StoreServiceTest {
             .openTime(LocalTime.parse(dto.getOpenTime()))
             .closeTime(LocalTime.parse(dto.getCloseTime()))
             .deleted(false)
-            .user(UserDummy.INSTANCE)
+            .user(user)
             .build();
 
         when(storeRepository.save(any(Store.class))).thenReturn(store);
 
         // when
-        StoreResponseDto response = storeService.createStore(dto);
+        CustomUserPrincipal principal = new CustomUserPrincipal(user);
+        StoreResponseDto response = storeService.createStore(dto, principal);
 
         // then
         assertThat(response.getName()).isEqualTo("장미 화원");
@@ -106,39 +120,35 @@ class StoreServiceTest {
         );
         when(storeRepository.existsByNameAndDeletedFalse(dto.getName())).thenReturn(true);
 
+        CustomUserPrincipal principal = new CustomUserPrincipal(user);
+
         // when & then
-        assertThrows(ApiException.class, () -> storeService.createStore(dto));
+        assertThrows(ApiException.class, () -> storeService.createStore(dto, principal));
     }
 
     @Test
     void 가게_삭제_성공() {
         // given
-        Store store = Store.builder()
-            .id(1L)
-            .name("삭제할 화원")
-            .deleted(false)
-            .user(UserDummy.INSTANCE)
-            .build();
-        when(storeRepository.findByIdAndDeletedFalse(1L))
+        when(storeRepository.findByUserIdAndDeletedFalse(user.getId()))
             .thenReturn(Optional.of(store));
 
         // when
-        storeService.deleteStore(1L);
+        CustomUserPrincipal principal = new CustomUserPrincipal(user);
+        storeService.deleteStore(principal);
 
         // then
-        store.setDeleted();
         assertThat(store.getDeleted()).isTrue();
-        verify(storeRepository).save(store);
     }
 
     @Test
     void 가게_삭제_Id없음_예외() {
-        // given
-        when(storeRepository.findByIdAndDeletedFalse(999L))
-            .thenReturn(Optional.empty());
 
-        // when & then
-        assertThrows(ApiException.class, () -> storeService.deleteStore(999L));
+        when(storeRepository.findByUserIdAndDeletedFalse(user.getId())).thenReturn(Optional.empty());
+
+        CustomUserPrincipal principal = new CustomUserPrincipal(user);
+
+        assertThrows(ApiException.class, () -> storeService.deleteStore(principal));
+
     }
 
     @Test
@@ -156,7 +166,7 @@ class StoreServiceTest {
                 .openTime(LocalTime.of(9, 0))
                 .closeTime(LocalTime.of(20, 0))
                 .deleted(false)
-                .user(UserDummy.INSTANCE)
+                .user(user)
                 .build(),
             Store.builder()
                 .id(2L)
@@ -168,7 +178,7 @@ class StoreServiceTest {
                 .openTime(LocalTime.of(10, 0))
                 .closeTime(LocalTime.of(21, 0))
                 .deleted(false)
-                .user(UserDummy.INSTANCE)
+                .user(user)
                 .build()
         );
 
@@ -196,7 +206,7 @@ class StoreServiceTest {
             .openTime(LocalTime.of(9, 0))
             .closeTime(LocalTime.of(18, 0))
             .deleted(false)
-            .user(UserDummy.INSTANCE)
+            .user(user)
             .build();
 
         when(storeRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(store));
