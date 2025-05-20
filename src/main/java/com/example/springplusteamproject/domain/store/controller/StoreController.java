@@ -3,7 +3,6 @@ package com.example.springplusteamproject.domain.store.controller;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,11 +11,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.springplusteamproject.common.response.ApiResponse;
+import com.example.springplusteamproject.common.status.SuccessStatus;
 import com.example.springplusteamproject.domain.store.dto.request.StoreRequestDto;
 import com.example.springplusteamproject.domain.store.dto.response.StoreListResponseDto;
 import com.example.springplusteamproject.domain.store.dto.response.StoreResponseDto;
-import com.example.springplusteamproject.domain.store.service.StoreService;
-import com.example.springplusteamproject.domain.store.status.success.StoreSuccessCode;
+import com.example.springplusteamproject.domain.store.service.StoreServiceImpl;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -29,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class StoreController {
 
-    private final StoreService storeService;
+    private final StoreServiceImpl storeService;
 
     @Operation(
         summary = "가게 생성",
@@ -41,7 +40,7 @@ public class StoreController {
         @Valid @RequestBody StoreRequestDto dto
     ) {
         StoreResponseDto responseDto = storeService.createStore(dto);
-        return ApiResponse.onSuccess(StoreSuccessCode.STORE_ADD_SUCCESS, responseDto);
+        return ApiResponse.onSuccess(SuccessStatus.STORE_CREATED_SUCCESS, responseDto);
     }
 
     @Operation(
@@ -55,7 +54,7 @@ public class StoreController {
     ) {
         // todo 수정 필요
         storeService.deleteStore(1L);
-        return ApiResponse.onSuccess(StoreSuccessCode.STORE_DELETE_SUCCESS, null);
+        return ApiResponse.onSuccess(SuccessStatus.STORE_SUCCESS, null);
     }
 
     @Operation(
@@ -65,7 +64,7 @@ public class StoreController {
     )
     @GetMapping("/stores")
     public ResponseEntity<ApiResponse<List<StoreListResponseDto>>> findStore() {
-        return ApiResponse.onSuccess(StoreSuccessCode.STORE_LOOKUP_SUCCESS, storeService.getAllStores());
+        return ApiResponse.onSuccess(SuccessStatus.STORE_SUCCESS, storeService.getAllStores());
     }
 
     @Operation(
@@ -77,7 +76,12 @@ public class StoreController {
     public ResponseEntity<ApiResponse<StoreResponseDto>> getStoreById(
         @PathVariable Long storeId
     ) {
-        return ApiResponse.onSuccess(StoreSuccessCode.STORE_LOOKUP_SUCCESS, storeService.getStoreById(storeId));
+        return ApiResponse.onSuccess(SuccessStatus.STORE_SUCCESS, storeService.getStoreById(storeId));
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<StoreResponseDto>> checkingName() {
+        return null;
     }
 
 }

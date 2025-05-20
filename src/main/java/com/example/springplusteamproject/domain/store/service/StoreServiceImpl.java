@@ -8,12 +8,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.springplusteamproject.common.exception.ApiException;
+import com.example.springplusteamproject.common.status.ErrorStatus;
 import com.example.springplusteamproject.domain.store.dto.request.StoreRequestDto;
 import com.example.springplusteamproject.domain.store.dto.response.StoreListResponseDto;
 import com.example.springplusteamproject.domain.store.dto.response.StoreResponseDto;
 import com.example.springplusteamproject.domain.store.entity.Store;
 import com.example.springplusteamproject.domain.store.repository.StoreRepository;
-import com.example.springplusteamproject.domain.store.status.exception.StoreErrorCode;
 import com.example.springplusteamproject.temp.UserDummy;
 
 import lombok.RequiredArgsConstructor;
@@ -28,7 +28,7 @@ public class StoreServiceImpl implements StoreService {
     public StoreResponseDto createStore(StoreRequestDto dto) {
 
         if (storeRepository.existsByNameAndDeletedFalse(dto.getName())) {
-            throw new ApiException(StoreErrorCode.STORE_NAME_CONFLICT);
+            throw new ApiException(ErrorStatus.STORE_BAD_REQUEST);
         }
 
         Store store = Store.builder()
@@ -51,7 +51,7 @@ public class StoreServiceImpl implements StoreService {
     public void deleteStore(Long id) {
 
         Store store = storeRepository.findByIdAndDeletedFalse(id)
-            .orElseThrow(() -> new ApiException(StoreErrorCode.STORE_NOT_FOUND));
+            .orElseThrow(() -> new ApiException(ErrorStatus.STORE_NOT_FOUND));
 
         store.setDeleted();
         storeRepository.save(store);
@@ -69,7 +69,7 @@ public class StoreServiceImpl implements StoreService {
     public StoreResponseDto getStoreById(Long id) {
 
         Store store = storeRepository.findByIdAndDeletedFalse(id)
-            .orElseThrow(() -> new ApiException(StoreErrorCode.STORE_NOT_FOUND));
+            .orElseThrow(() -> new ApiException(ErrorStatus.STORE_NOT_FOUND));
 
         return toResponseDto(store);
     }
