@@ -11,7 +11,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -42,10 +42,10 @@ public class UserCoupon {
     @Column(nullable = false)
     private boolean isUsed;
 
-    private LocalDateTime usedAt;
+    private LocalDate usedAt;
 
     public void useCoupon() {
         this.isUsed = true;
-        this.usedAt = LocalDateTime.now();
+        this.usedAt = LocalDate.now();
     }
 }

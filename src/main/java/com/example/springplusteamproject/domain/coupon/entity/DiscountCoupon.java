@@ -13,7 +13,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -42,10 +42,10 @@ public class DiscountCoupon extends BaseEntity {
     private Long discount;
 
     @Column(nullable = false)
-    private LocalDateTime issuedAt;
+    private LocalDate issuedAt;
 
     @Column(nullable = false)
-    private LocalDateTime expiresAt;
+    private LocalDate expiresAt;
 
     @Column(nullable = false)
     private Long quantity;

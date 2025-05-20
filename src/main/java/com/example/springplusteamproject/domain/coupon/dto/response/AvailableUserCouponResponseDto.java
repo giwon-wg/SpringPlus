@@ -1,7 +1,7 @@
 package com.example.springplusteamproject.domain.coupon.dto.response;
 
 import com.example.springplusteamproject.domain.coupon.entity.DiscountCoupon;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -12,8 +12,8 @@ public class AvailableUserCouponResponseDto {
     private final Long id;
     private final String couponName;
     private final Long discount;
-    private final LocalDateTime issuedAt;
-    private final LocalDateTime expiresAt;
+    private final LocalDate issuedAt;
+    private final LocalDate expiresAt;
     private final Long stock;
 
     public static AvailableUserCouponResponseDto from(DiscountCoupon discountCoupon) {
