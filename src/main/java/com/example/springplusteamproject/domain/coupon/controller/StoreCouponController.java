@@ -25,7 +25,16 @@ public class StoreCouponController {
     public ResponseEntity<ApiResponse<List<AvailableUserCouponResponseDto>>> findAvailableUserCoupons(
         @PathVariable Long storeId, @AuthenticationPrincipal CustomUserPrincipal principal) {
 
-        List<AvailableUserCouponResponseDto> responseDto = userCouponService.findAvailableUserCoupons(storeId, principal);
+        List<AvailableUserCouponResponseDto> responseDto = userCouponService.findAvailableUserCoupons(storeId,
+            principal);
+        return ApiResponse.onSuccess(SuccessStatus.AVAILABLE_USER_COUPON_FIND_SUCCESS, responseDto);
+    }
+
+    @GetMapping("/{couponId}")
+    public ResponseEntity<ApiResponse<AvailableUserCouponResponseDto>> findAvailableUserCoupon(
+        @PathVariable Long storeId, @PathVariable Long couponId, @AuthenticationPrincipal CustomUserPrincipal principal) {
+
+        AvailableUserCouponResponseDto responseDto = userCouponService.findAvailableUserCoupon(storeId, couponId, principal);
         return ApiResponse.onSuccess(SuccessStatus.AVAILABLE_USER_COUPON_FIND_SUCCESS, responseDto);
     }
 }

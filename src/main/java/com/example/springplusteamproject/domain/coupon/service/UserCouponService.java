@@ -7,4 +7,5 @@ import java.util.List;
 public interface UserCouponService {
 
     List<AvailableUserCouponResponseDto> findAvailableUserCoupons(Long storeId, CustomUserPrincipal principal);
+    AvailableUserCouponResponseDto findAvailableUserCoupon(Long storeId, Long couponId, CustomUserPrincipal principal);
 }

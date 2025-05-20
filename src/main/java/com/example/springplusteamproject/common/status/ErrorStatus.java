@@ -57,7 +57,7 @@ public enum ErrorStatus implements BaseErrorCode {
     ROLE_OWNER_FORBIDDEN(HttpStatus.UNAUTHORIZED, "U005", "매장 사장님이 아닙니다."),
     PASSWORD_DUPLICATED(HttpStatus.BAD_REQUEST, "U004", "같은 비밀번호로 중복 요청할 수 없습니다"),
     PASSWORD_NOT_MATCHED(HttpStatus.BAD_REQUEST, "U004", "비밀번호가 다릅니다."),
-    FORBIDDEN(HttpStatus.FORBIDDEN, "U006", "잘못된 접근입니다.");
+    FORBIDDEN(HttpStatus.FORBIDDEN, "U006", "잘못된 접근입니다."),
 
 
 
@@ -139,7 +139,8 @@ public enum ErrorStatus implements BaseErrorCode {
 
 
     // Coupon C000
-
+    COUPON_NOT_FOUND(HttpStatus.NOT_FOUND, "C007", "해당 쿠폰이 없습니다."),
+    COUPON_ALREADY_ISSUED(HttpStatus.CONFLICT, "C008", "이미 발급받은 쿠폰입니다.");
 
 
 
