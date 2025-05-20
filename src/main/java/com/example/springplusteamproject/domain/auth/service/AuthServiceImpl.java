@@ -64,7 +64,7 @@ public class AuthServiceImpl implements AuthService {
 
         // 비밀번호 검증
         if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
-            log.warn("비밀번호 미일치: 입력 비밀번호 = {}, 등록 비밀번호 = {}", requestDto.getPassword(), user.getPassword());
+            log.warn("입력 비밀번호 미일치");
             throw new ApiException(ErrorStatus.PASSWORD_NOT_MATCHED);
         }
 
