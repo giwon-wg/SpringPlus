@@ -15,7 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-@Slf4j
+@Slf4j(topic = "UserController")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/users")
@@ -35,7 +35,8 @@ public class UserController {
     {
         log.info("oldPassword: {}, newPassword: {}", requestDto.getOldPassword(), requestDto.getNewPassword());
         userService.updateMyPassword(requestDto, principal);
-        return ApiResponse.onSuccess(SuccessStatus.USER_PASSWORD_UPDATE_SUCCESS, null);
+        log.info("비밀번호 업데이트 성공");
+        return ApiResponse.onSuccess(SuccessStatus.USER_RESPONSE_SUCCESS, null);
     }
 
 
@@ -48,7 +49,8 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserResponseDto>> findUser(@AuthenticationPrincipal CustomUserPrincipal principal) {
 
         UserResponseDto responseDto = userService.findUserByEmail(principal.getUsername());
-        return ApiResponse.onSuccess(SuccessStatus.USER_FIND_SUCCESS, responseDto);
+        log.info("내 정보 조회 성공");
+        return ApiResponse.onSuccess(SuccessStatus.USER_RESPONSE_SUCCESS, responseDto);
     }
 
 
@@ -61,6 +63,7 @@ public class UserController {
     public ResponseEntity<ApiResponse<Void>> deleteUser(@AuthenticationPrincipal CustomUserPrincipal principal) {
 
         userService.deleteMyAccount(principal);
-        return ApiResponse.onSuccess(SuccessStatus.USER_DELETE_SUCCESS, null);
+        log.info("내 계정 삭제 성공");
+        return ApiResponse.onSuccess(SuccessStatus.USER_RESPONSE_SUCCESS, null);
     }
 }

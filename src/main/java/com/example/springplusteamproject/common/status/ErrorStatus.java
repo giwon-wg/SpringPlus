@@ -20,17 +20,17 @@ public enum ErrorStatus implements BaseErrorCode {
     // Auth A000
     LOGIN_FAILED(HttpStatus.UNAUTHORIZED, "A005", "로그인 실패, 아이디나 비밀번호를 확인해 주세요."),
     UNAUTHORIZED_ACCESS(HttpStatus.UNAUTHORIZED, "A005", "인증되지 않은 접근입니다. 로그인 후 시도해 주세요."),
-    USER_EXIST_EMAIL(HttpStatus.CONFLICT, "A008", "이미 존재하는 이메일입니다."),
-    USER_EXIST_NICKNAME(HttpStatus.CONFLICT, "A008", "이미 존재하는 닉네임입니다."),
+    USER_EXIST(HttpStatus.CONFLICT, "A008", "이미 존재하는 정보입니다."),
     USER_OWNER_BRN_REQUIRED(HttpStatus.BAD_REQUEST, "A004", "가게 주인은 사업자 등록번호를 반드시 입력해야 합니다."),
 
     // JWT
-    JWT_REQUIRED(HttpStatus.BAD_REQUEST, "A004", "JWT 토큰이 필요합니다."),
-    JWT_BAD_TOKEN(HttpStatus.BAD_REQUEST, "A004", "잘못된 JWT 토큰입니다."),
-    JWT_EXPIRED(HttpStatus.UNAUTHORIZED, "A005", "만료된 JWT 토큰입니다."),
-    JWT_INVALID_TOKEN( HttpStatus.UNAUTHORIZED, "A005", "유효하지 않는 JWT 토큰입니다."),
-    JWT_INVALID_SIGNATURE(HttpStatus.UNAUTHORIZED, "A005", "유효하지 않는 JWT 서명입니다."),
     JWT_NOT_FOUND_TOKEN(HttpStatus.NOT_FOUND, "A007", "JWT 토큰이 없습니다"),
+
+
+
+
+
+
 
 
 
@@ -78,9 +78,9 @@ public enum ErrorStatus implements BaseErrorCode {
 
 
 
-    // Store S000
-
-
+    // Store S000  80 ~ 110
+    STORE_BAD_REQUEST(HttpStatus.BAD_REQUEST, "S004", "잘못된 요청입니다."),
+    STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "S007", "해당 정보를 찾을 수 없습니다."),
 
 
 

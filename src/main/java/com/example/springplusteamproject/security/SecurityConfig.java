@@ -1,7 +1,5 @@
 package com.example.springplusteamproject.security;
 
-import com.example.springplusteamproject.jwt.JwtFilter;
-import com.example.springplusteamproject.jwt.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -39,6 +37,7 @@ public class SecurityConfig {
                         "/v3/api-docs/**",
                         "/swagger-resources/**",
                         "/webjars/**").permitAll()
+                .requestMatchers("/owner/**").hasRole("OWNER")
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
