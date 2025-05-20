@@ -48,6 +48,9 @@ public enum SuccessStatus implements BaseCode {
 
 
     // User U000
+    USER_PASSWORD_UPDATE_SUCCESS(HttpStatus.OK, "U001", "비밀번호 업데이트에 성공했습니다."),
+    USER_FIND_SUCCESS(HttpStatus.OK, "U001", "유저 조회에 성공했습니다."),
+    USER_DELETE_SUCCESS(HttpStatus.OK, "U001", "유저 삭제에 성공했습니다."),
     USER_RESPONSE_SUCCESS(HttpStatus.OK, "U001", "유저 응답에 성공했습니다."),
 
 
@@ -137,8 +140,9 @@ public enum SuccessStatus implements BaseCode {
 
 
     // Coupon C000
-
-
+    DISCOUNT_COUPON_CREATE_SUCCESS(HttpStatus.CREATED, "C002", "할인 쿠폰 등록에 성공했습니다."),
+    USER_COUPON_FIND_SUCCESS(HttpStatus.OK, "C001", "쿠폰 조회에 성공했습니다."),
+    USER_COUPON_ISSUE_SUCCESS(HttpStatus.OK, "C001", "할인 쿠폰 발급에 성공했습니다."),
 
 
 
