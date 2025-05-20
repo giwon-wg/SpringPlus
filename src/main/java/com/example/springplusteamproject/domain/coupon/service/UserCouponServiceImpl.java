@@ -74,6 +74,7 @@ public class UserCouponServiceImpl implements UserCouponService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<UserCouponIssueResponseDto> findMyUserCoupons(CustomUserPrincipal principal) {
 
         User user = validateActivateUser(principal.getUsername());
