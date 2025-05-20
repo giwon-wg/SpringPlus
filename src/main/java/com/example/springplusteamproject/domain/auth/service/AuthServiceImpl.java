@@ -9,7 +9,7 @@ import com.example.springplusteamproject.domain.auth.dto.response.SignupResponse
 import com.example.springplusteamproject.domain.user.entity.User;
 import com.example.springplusteamproject.domain.user.entity.UserRole;
 import com.example.springplusteamproject.domain.user.repository.UserRepository;
-import com.example.springplusteamproject.jwt.JwtUtil;
+import com.example.springplusteamproject.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
