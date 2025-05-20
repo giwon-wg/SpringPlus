@@ -8,8 +8,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface UserCouponRepository extends JpaRepository<UserCoupon, Long> {
 
-    @Query("SELECT uc.id FROM UserCoupon uc WHERE uc.discountCoupon.store.id = :storeId AND uc.user.id = :userId")
-    List<Long> findHavingCouponIds(@Param("storeId") Long storeId, @Param("userId") Long userId);
+    @Query("SELECT uc.discountCoupon.id FROM UserCoupon uc WHERE uc.discountCoupon.store.id = :storeId AND uc.user.id = :userId")
+    List<Long> findHavingCouponIds(@Param("userId") Long userId, @Param("storeId") Long storeId);
 
     boolean existsByUser_IdAndDiscountCoupon_Id(Long userId, Long couponId);
 }
