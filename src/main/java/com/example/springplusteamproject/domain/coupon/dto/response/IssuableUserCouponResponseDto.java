@@ -7,7 +7,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class AvailableUserCouponResponseDto {
+public class IssuableUserCouponResponseDto {
 
     private final Long id;
     private final String couponName;
@@ -16,9 +16,9 @@ public class AvailableUserCouponResponseDto {
     private final LocalDate expiresAt;
     private final Long stock;
 
-    public static AvailableUserCouponResponseDto from(DiscountCoupon discountCoupon) {
+    public static IssuableUserCouponResponseDto from(DiscountCoupon discountCoupon) {
 
-        return new AvailableUserCouponResponseDto(discountCoupon.getId(), discountCoupon.getCouponName(),
+        return new IssuableUserCouponResponseDto(discountCoupon.getId(), discountCoupon.getCouponName(),
             discountCoupon.getDiscount(), discountCoupon.getIssuedAt(), discountCoupon.getExpiresAt(),
             discountCoupon.getStock());
     }

@@ -2,7 +2,7 @@ package com.example.springplusteamproject.domain.coupon.service;
 
 import com.example.springplusteamproject.common.exception.ApiException;
 import com.example.springplusteamproject.common.status.ErrorStatus;
-import com.example.springplusteamproject.domain.coupon.dto.response.AvailableUserCouponResponseDto;
+import com.example.springplusteamproject.domain.coupon.dto.response.IssuableUserCouponResponseDto;
 import com.example.springplusteamproject.domain.coupon.dto.response.UserCouponIssueResponseDto;
 import com.example.springplusteamproject.domain.coupon.entity.DiscountCoupon;
 import com.example.springplusteamproject.domain.coupon.entity.UserCoupon;
@@ -29,7 +29,7 @@ public class UserCouponServiceImpl implements UserCouponService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<AvailableUserCouponResponseDto> findAvailableUserCoupons(Long storeId, CustomUserPrincipal principal) {
+    public List<IssuableUserCouponResponseDto> findIssuableUserCoupons(Long storeId, CustomUserPrincipal principal) {
 
         User user = validateActivateUser(principal.getUsername());
 
@@ -37,15 +37,15 @@ public class UserCouponServiceImpl implements UserCouponService {
         validateActivateStore(storeId);
 
         List<Long> couponIds = userCouponRepository.findHavingCouponIds(user.getId(), storeId);
-        List<DiscountCoupon> availableCouponList = discountCouponRepository.findAvailableCouponList(couponIds, storeId);
+        List<DiscountCoupon> availableCouponList = discountCouponRepository.findIssuableCouponList(couponIds, storeId);
 
-        return availableCouponList.stream().map(AvailableUserCouponResponseDto::from).collect(Collectors.toList());
+        return availableCouponList.stream().map(IssuableUserCouponResponseDto::from).collect(Collectors.toList());
     }
 
     @Override
     @Transactional(readOnly = true)
-    public AvailableUserCouponResponseDto findAvailableUserCoupon(Long storeId, Long couponId,
-                                                                  CustomUserPrincipal principal) {
+    public IssuableUserCouponResponseDto findIssuableUserCoupon(Long storeId, Long couponId,
+                                                                CustomUserPrincipal principal) {
 
         User user = validateActivateUser(principal.getUsername());
         validateCouponNotIssued(user.getId(), couponId);
@@ -53,7 +53,7 @@ public class UserCouponServiceImpl implements UserCouponService {
         validateActivateStore(storeId);
         DiscountCoupon availableCoupon = validateAvailableCoupon(storeId, couponId);
 
-        return AvailableUserCouponResponseDto.from(availableCoupon);
+        return IssuableUserCouponResponseDto.from(availableCoupon);
     }
 
     @Override

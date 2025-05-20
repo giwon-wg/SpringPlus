@@ -2,7 +2,7 @@ package com.example.springplusteamproject.domain.coupon.controller;
 
 import com.example.springplusteamproject.common.response.ApiResponse;
 import com.example.springplusteamproject.common.status.SuccessStatus;
-import com.example.springplusteamproject.domain.coupon.dto.response.AvailableUserCouponResponseDto;
+import com.example.springplusteamproject.domain.coupon.dto.response.IssuableUserCouponResponseDto;
 import com.example.springplusteamproject.domain.coupon.dto.response.UserCouponIssueResponseDto;
 import com.example.springplusteamproject.domain.coupon.service.UserCouponService;
 import com.example.springplusteamproject.security.CustomUserPrincipal;
@@ -31,10 +31,10 @@ public class StoreCouponController {
         security = {@SecurityRequirement(name = "bearerAuth")}
     )
     @GetMapping
-    public ResponseEntity<ApiResponse<List<AvailableUserCouponResponseDto>>> findAvailableUserCoupons(
+    public ResponseEntity<ApiResponse<List<IssuableUserCouponResponseDto>>> findIssuableUserCoupons(
         @PathVariable Long storeId, @AuthenticationPrincipal CustomUserPrincipal principal) {
 
-        List<AvailableUserCouponResponseDto> responseDto = userCouponService.findAvailableUserCoupons(storeId,
+        List<IssuableUserCouponResponseDto> responseDto = userCouponService.findIssuableUserCoupons(storeId,
             principal);
         return ApiResponse.onSuccess(SuccessStatus.USER_COUPON_FIND_SUCCESS, responseDto);
     }
@@ -45,11 +45,11 @@ public class StoreCouponController {
         security = {@SecurityRequirement(name = "bearerAuth")}
     )
     @GetMapping("/{couponId}")
-    public ResponseEntity<ApiResponse<AvailableUserCouponResponseDto>> findAvailableUserCoupon(
+    public ResponseEntity<ApiResponse<IssuableUserCouponResponseDto>> findIssuableUserCoupon(
         @PathVariable Long storeId, @PathVariable Long couponId,
         @AuthenticationPrincipal CustomUserPrincipal principal) {
 
-        AvailableUserCouponResponseDto responseDto = userCouponService.findAvailableUserCoupon(storeId, couponId,
+        IssuableUserCouponResponseDto responseDto = userCouponService.findIssuableUserCoupon(storeId, couponId,
             principal);
         return ApiResponse.onSuccess(SuccessStatus.USER_COUPON_FIND_SUCCESS, responseDto);
     }
