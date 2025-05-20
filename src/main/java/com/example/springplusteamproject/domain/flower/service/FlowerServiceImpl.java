@@ -1,8 +1,8 @@
 package com.example.springplusteamproject.domain.flower.service;
 
-import static com.example.springplusteamproject.common.status.ErrorStatus.CUSTOM_ERROR_STATUS;
 import static com.example.springplusteamproject.common.status.ErrorStatus.FLOWER_ACCESS_DENIED;
 import static com.example.springplusteamproject.common.status.ErrorStatus.FLOWER_NOT_FOUND;
+import static com.example.springplusteamproject.common.status.ErrorStatus.STORE_NOT_FOUND;
 
 import com.example.springplusteamproject.common.exception.ApiException;
 import com.example.springplusteamproject.domain.flower.dto.request.FlowerRequestDto;
@@ -32,14 +32,14 @@ public class FlowerServiceImpl implements FlowerService {
 
     @Override
     @Transactional
-    public Create createFlower(Long storeId, FlowerRequestDto.Create request) {
+    public Create createFlower(Long storeId, FlowerRequestDto.Create request, Long userId) {
 
         // 가게 조회
         Store store = storeRepository.findByIdAndDeletedFalse(storeId)
-            .orElseThrow(() -> new ApiException(CUSTOM_ERROR_STATUS)); // 수정하기
+            .orElseThrow(() -> new ApiException(STORE_NOT_FOUND));
 
         // 본인 가게에서만 상품 등록 가능
-        if (!store.getUser().getId().equals(1L)) { // 1L -> AuthUser 수정하기
+        if (!store.getUser().getId().equals(userId)) {
             throw new ApiException(FLOWER_ACCESS_DENIED);
         }
 
@@ -52,11 +52,10 @@ public class FlowerServiceImpl implements FlowerService {
 
     @Override
     @Transactional
-    public void updateFlower(Long storeId, Long flowerId, Update request) {
+    public void updateFlower(Long storeId, Long flowerId, Update request, Long userId) {
 
-        // 상품 조회
-        Flower flower = flowerRepository.findByIdAndDeletedFalse(flowerId)
-            .orElseThrow(() -> new ApiException(FLOWER_NOT_FOUND));
+        // 수정 권한 확인
+        Flower flower = checkFlowerAuth(userId, storeId, flowerId);
 
         // 상품 수정
         flower.update(request);
@@ -84,22 +83,36 @@ public class FlowerServiceImpl implements FlowerService {
 
     @Override
     @Transactional
-    public void deleteFlower(Long storeId, Long flowerId) {
+    public void deleteFlower(Long storeId, Long flowerId, Long userId) {
+
+        // 삭제 권한 확인
+        Flower flower = checkFlowerAuth(userId, storeId, flowerId);
+
+        // soft delete 처리
+        flower.setDeleted();
+    }
+
+    @Transactional
+    public Flower checkFlowerAuth(Long userId, Long storeId, Long flowerId) {
 
         // 가게 조회
         Store store = storeRepository.findByIdAndDeletedFalse(storeId)
-            .orElseThrow(() -> new ApiException(CUSTOM_ERROR_STATUS)); // 수정하기
+            .orElseThrow(() -> new ApiException(STORE_NOT_FOUND));
 
-        // 본인 가게의 상품만 삭제 가능
-        if (!store.getUser().getId().equals(1L)) { // 1L -> AuthUser 수정하기
+        // 본인 가게가 맞는지 확인
+        if (!store.getUser().getId().equals(userId)) {
             throw new ApiException(FLOWER_ACCESS_DENIED);
         }
 
         // 상품 조회
         Flower flower = flowerRepository.findByIdAndDeletedFalse(flowerId)
-            .orElseThrow(() -> new ApiException(CUSTOM_ERROR_STATUS));
+            .orElseThrow(() -> new ApiException(FLOWER_NOT_FOUND));
 
-        // soft delete 처리
-        flower.setDeleted();
+        // 선택한 가게에 등록된 상품이 맞는지 확인
+        if (!flower.getStore().getId().equals(storeId)) {
+            throw new ApiException(FLOWER_ACCESS_DENIED);
+        }
+
+        return flower;
     }
 }

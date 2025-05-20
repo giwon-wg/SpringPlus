@@ -7,6 +7,7 @@ import com.example.springplusteamproject.common.response.ApiResponse;
 import com.example.springplusteamproject.domain.flower.dto.request.FlowerRequestDto;
 import com.example.springplusteamproject.domain.flower.dto.response.FlowerResponseDto;
 import com.example.springplusteamproject.domain.flower.service.FlowerService;
+import com.example.springplusteamproject.security.CustomUserPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,6 +15,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -38,9 +40,10 @@ public class FlowerController {
     @PostMapping("/owner/stores/{storeId}/flowers")
     public ResponseEntity<ApiResponse<FlowerResponseDto.Create>> createFlower(
         @PathVariable Long storeId,
-        @Valid @RequestBody FlowerRequestDto.Create request
+        @Valid @RequestBody FlowerRequestDto.Create request,
+        @AuthenticationPrincipal CustomUserPrincipal principal
     ) {
-        return ApiResponse.onSuccess(FLOWER_CREATE_SUCCESS, flowerService.createFlower(storeId, request));
+        return ApiResponse.onSuccess(FLOWER_CREATE_SUCCESS, flowerService.createFlower(storeId, request, principal.getId()));
     }
 
     @Operation(
@@ -52,9 +55,10 @@ public class FlowerController {
     public ResponseEntity<ApiResponse<Void>> updateFlower(
         @PathVariable Long storeId,
         @PathVariable Long flowerId,
-        @Valid @RequestBody FlowerRequestDto.Update request
+        @Valid @RequestBody FlowerRequestDto.Update request,
+        @AuthenticationPrincipal CustomUserPrincipal principal
     ) {
-        flowerService.updateFlower(storeId, flowerId, request);
+        flowerService.updateFlower(storeId, flowerId, request, principal.getId());
         return ApiResponse.onSuccess(FLOWER_OPERATION_SUCCESS, null);
     }
 
@@ -93,10 +97,10 @@ public class FlowerController {
     @DeleteMapping("/owner/stores/{storeId}/flowers/{flowerId}")
     public ResponseEntity<ApiResponse<Void>> deleteFlower(
         @PathVariable Long storeId,
-        @PathVariable Long flowerId
+        @PathVariable Long flowerId,
+        @AuthenticationPrincipal CustomUserPrincipal principal
     ) {
-        flowerService.deleteFlower(storeId, flowerId);
+        flowerService.deleteFlower(storeId, flowerId, principal.getId());
         return ApiResponse.onSuccess(FLOWER_OPERATION_SUCCESS, null);
     }
-
 }

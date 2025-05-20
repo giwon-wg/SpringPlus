@@ -10,10 +10,10 @@ import org.springframework.data.domain.Page;
 public interface FlowerService {
 
     // 상품 등록
-    FlowerResponseDto.Create createFlower(Long storeId, FlowerRequestDto.Create request);
+    FlowerResponseDto.Create createFlower(Long storeId, FlowerRequestDto.Create request, Long userId);
 
     // 상품 수정
-    void updateFlower(Long storeId, Long flowerId, FlowerRequestDto.Update request);
+    void updateFlower(Long storeId, Long flowerId, FlowerRequestDto.Update request, Long userId);
 
     // 상품 조회 (본인 가게의 상품만)
     Page<FlowerResponseDto.Get> getMyFlowers(Long storeId, int page, int size);
@@ -25,6 +25,6 @@ public interface FlowerService {
     FlowerResponseDto.Get getFlowerDetails(Long storeId, Long flowerId);
 
     // 상품 삭제
-    void deleteFlower(Long storeId, Long flowerId);
+    void deleteFlower(Long storeId, Long flowerId, Long userId);
 
 }
