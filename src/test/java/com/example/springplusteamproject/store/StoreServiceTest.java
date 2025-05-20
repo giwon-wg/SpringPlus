@@ -18,7 +18,7 @@ import com.example.springplusteamproject.domain.store.dto.response.StoreListResp
 import com.example.springplusteamproject.domain.store.dto.response.StoreResponseDto;
 import com.example.springplusteamproject.domain.store.entity.Store;
 import com.example.springplusteamproject.domain.store.repository.StoreRepository;
-import com.example.springplusteamproject.domain.store.service.StoreService;
+import com.example.springplusteamproject.domain.store.service.StoreServiceImpl;
 import com.example.springplusteamproject.temp.UserDummy;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -28,14 +28,14 @@ class StoreServiceTest {
     @Mock
     private StoreRepository storeRepository;
 
-    private StoreService storeService;
+    private StoreServiceImpl storeService;
 
     private Store store;
 
     @BeforeEach
     void SetUp() {
         MockitoAnnotations.openMocks(this);
-        storeService = new StoreService(storeRepository);
+        storeService = new StoreServiceImpl(storeRepository);
 
         store = Store.builder()
             .id(1L)
