@@ -109,7 +109,8 @@ public enum ErrorStatus implements BaseErrorCode {
 
 
     // Flower F000
-
+    FLOWER_NOT_FOUND(HttpStatus.NOT_FOUND, "F007", "선택한 꽃 상품을 찾을 수 없습니다."),
+    FLOWER_ACCESS_DENIED(HttpStatus.FORBIDDEN, "F006", "선택한 꽃 상품에 대한 권한이 없습니다."),
 
 
 
@@ -171,7 +172,6 @@ public enum ErrorStatus implements BaseErrorCode {
 
 
     // Order O000
-
 
 
 

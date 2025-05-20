@@ -110,8 +110,8 @@ public enum SuccessStatus implements BaseCode {
 
 
     // Flower F000
-
-
+    FLOWER_CREATE_SUCCESS(HttpStatus.CREATED, "F002", "꽃 상품 등록에 성공했습니다."),
+    FLOWER_OPERATION_SUCCESS(HttpStatus.OK, "F001", "꽃 상품에 대한 요청이 성공적으로 처리되었습니다."),
 
 
 
