@@ -1,15 +1,21 @@
 package com.example.springplusteamproject.domain.store.service;
 
+
 import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.springplusteamproject.common.config.ForbiddenWordUtil;
 import com.example.springplusteamproject.common.exception.ApiException;
+import com.example.springplusteamproject.common.request.CursorPageRequest;
+import com.example.springplusteamproject.common.response.CursorPageResponse;
 import com.example.springplusteamproject.common.status.ErrorStatus;
+import com.example.springplusteamproject.common.util.CursorPaginationUtil;
 import com.example.springplusteamproject.domain.store.dto.request.StoreCheckNameRequestDto;
 import com.example.springplusteamproject.domain.store.dto.request.StoreRequestDto;
 import com.example.springplusteamproject.domain.store.dto.response.StoreListResponseDto;
@@ -100,6 +106,17 @@ public class StoreServiceImpl implements StoreService {
 
         return "사용 가능한 상호명입니다.";
 
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public CursorPageResponse<StoreListResponseDto> getStoresByCursor(CursorPageRequest cursorPageRequest) {
+        List<Store> stores = storeRepository.findByCursor(cursorPageRequest.getCursor(), cursorPageRequest.getSize());
+
+        List<StoreListResponseDto> dtoList = stores.stream()
+            .map(StoreListResponseDto::fromEntity).toList();
+
+        return CursorPaginationUtil.paginate(dtoList, cursorPageRequest.getSize(), StoreListResponseDto::getId);
     }
 
     private StoreResponseDto toResponseDto(Store store) {

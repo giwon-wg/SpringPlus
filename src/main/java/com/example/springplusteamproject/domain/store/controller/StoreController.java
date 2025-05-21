@@ -7,18 +7,22 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.springplusteamproject.common.request.CursorPageRequest;
 import com.example.springplusteamproject.common.response.ApiResponse;
+import com.example.springplusteamproject.common.response.CursorPageResponse;
 import com.example.springplusteamproject.common.status.SuccessStatus;
 import com.example.springplusteamproject.domain.store.dto.request.StoreCheckNameRequestDto;
 import com.example.springplusteamproject.domain.store.dto.request.StoreRequestDto;
 import com.example.springplusteamproject.domain.store.dto.response.StoreListResponseDto;
 import com.example.springplusteamproject.domain.store.dto.response.StoreResponseDto;
-import com.example.springplusteamproject.domain.store.service.StoreServiceImpl;
+import com.example.springplusteamproject.domain.store.service.StoreService;
 import com.example.springplusteamproject.security.CustomUserPrincipal;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,7 +36,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class StoreController {
 
-    private final StoreServiceImpl storeService;
+    private final StoreService storeService;
 
     @Operation(
         summary = "가게 생성",
@@ -60,19 +64,20 @@ public class StoreController {
     public ResponseEntity<ApiResponse<StoreResponseDto>> deletedStore(
         @AuthenticationPrincipal CustomUserPrincipal principal
     ) {
-        // todo 수정 필요
         storeService.deleteStore(principal);
         return ApiResponse.onSuccess(SuccessStatus.STORE_SUCCESS, null);
     }
 
     @Operation(
-        summary = "가게 조회",
-        description = "모든 가게를 조회합니다.",
+        summary = "커서 기반 가게 조회",
+        description = "커서 기반으로 모든 가게를 조회합니다.",
         security = {@SecurityRequirement(name = "bearerAuth")}
     )
     @GetMapping("/stores")
-    public ResponseEntity<ApiResponse<List<StoreListResponseDto>>> findStore() {
-        return ApiResponse.onSuccess(SuccessStatus.STORE_SUCCESS, storeService.getAllStores());
+    public ResponseEntity<ApiResponse<CursorPageResponse<StoreListResponseDto>>> findStoreByCursor(
+        @Valid @ModelAttribute CursorPageRequest request
+    ) {
+        return ApiResponse.onSuccess(SuccessStatus.STORE_SUCCESS, storeService.getStoresByCursor(request));
     }
 
     @Operation(
@@ -101,4 +106,15 @@ public class StoreController {
         return ApiResponse.onSuccess(SuccessStatus.STORE_SUCCESS, message);
     }
 
+
+    // @Operation(
+    //     summary = "가게 조회",
+    //     description = "모든 가게를 조회합니다.",
+    //     security = {@SecurityRequirement(name = "bearerAuth")}
+    // )
+    // @GetMapping("/stores")
+    @Deprecated
+    public ResponseEntity<ApiResponse<List<StoreListResponseDto>>> findStore() {
+        return ApiResponse.onSuccess(SuccessStatus.STORE_SUCCESS, storeService.getAllStores());
+    }
 }
