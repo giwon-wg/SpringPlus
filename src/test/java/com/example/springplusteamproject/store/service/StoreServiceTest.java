@@ -3,6 +3,7 @@ package com.example.springplusteamproject.store.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import org.springframework.data.domain.Pageable;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
@@ -11,8 +12,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.PageRequest;
 
 import com.example.springplusteamproject.common.exception.ApiException;
+import com.example.springplusteamproject.common.response.CursorPageResponse;
 import com.example.springplusteamproject.domain.store.dto.request.StoreCheckNameRequestDto;
 import com.example.springplusteamproject.domain.store.dto.request.StoreRequestDto;
 import com.example.springplusteamproject.domain.store.dto.response.StoreListResponseDto;
@@ -216,6 +219,33 @@ class StoreServiceTest {
         assertThat(response).hasSize(2);
         assertThat(response.get(0).getName()).isEqualTo("장미 화원");
         assertThat(response.get(1).getName()).isEqualTo("튤립 화원");
+    }
+
+    @Test
+    void 커서기반_전체조회_성공() {
+        // given
+        Long cursor = 100L;
+        int size = 2;
+
+        Store store1 = store.builder()
+            .id(99L)
+            .name("장미 화원")
+            .deleted(false)
+            .build();
+
+        Store store2 = store.builder()
+            .id(98L)
+            .name("튤립 화원")
+            .deleted(false)
+            .build();
+
+        List<Store> mockResult = List.of(store1, store2);
+        Pageable pageable = PageRequest.of(0, size);
+
+        CursorPageResponse<StoreListResponseDto> result = storeService.getStoresByCursor(cursor, size);
+
+        // then
+
     }
 
     @Test
