@@ -72,16 +72,16 @@ public class User extends BaseEntity {
     }
 
     // 오너 여부 검증
-    public void validateOwner() {
-        if (userRole != UserRole.OWNER) {
-            throw new ApiException(ErrorStatus.ROLE_OWNER_FORBIDDEN);
-        }
-    }
+//    public void validateOwner() {
+//        if (userRole != UserRole.OWNER) {
+//            throw new ApiException(ErrorStatus.ROLE_OWNER_FORBIDDEN);
+//        }
+//    }
 
     // 일반 고객 여부 검증
-    public void validateCustomer() {
-        if (userRole != UserRole.CUSTOMER) {
-            throw new ApiException(ErrorStatus.ROLE_CUSTOMER_FORBIDDEN);
-        }
-    }
+//    public void validateCustomer() {
+//        if (userRole != UserRole.CUSTOMER) {
+//            throw new ApiException(ErrorStatus.ROLE_CUSTOMER_FORBIDDEN);
+//        }
+//    }
 }
