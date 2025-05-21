@@ -169,9 +169,5 @@ class AuthServiceImplUnitTest {
         assertEquals(ErrorStatus.PASSWORD_NOT_MATCHED, apiException.getErrorCode());
         verify(userRepository).findByEmail(LOGIN_REQUEST_DTO.getEmail());
         verify(passwordEncoder).matches(LOGIN_REQUEST_DTO.getPassword(), user.getPassword());
-
     }
-
-
-
 }
