@@ -125,11 +125,12 @@ public class Flower extends BaseEntity {
         }
     }
 
-    public void decreaseStock() {
-        if (this.stock <= 0) {
+    public void decreaseStock(int quantity) {
+        if (this.stock < quantity) {
             throw new ApiException(FLOWER_OUT_OF_STOCK);
         }
-        this.stock--;
+
+        this.stock -= quantity;
     }
 
 }
