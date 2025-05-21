@@ -1,5 +1,6 @@
 package com.example.springplusteamproject.domain.coupon.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -8,6 +9,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.example.springplusteamproject.common.exception.ApiException;
+import com.example.springplusteamproject.common.status.ErrorStatus;
 import com.example.springplusteamproject.domain.coupon.dto.request.DiscountCouponRequestDto;
 import com.example.springplusteamproject.domain.coupon.entity.DiscountCoupon;
 import com.example.springplusteamproject.domain.coupon.repository.DiscountCouponRepository;
@@ -82,11 +84,13 @@ public class DiscountCouponServiceTest {
         given(userRepository.findByEmail(email)).willReturn(Optional.of(mock(User.class)));
         given(storeRepository.findByIdAndDeletedFalse(storeId)).willReturn(Optional.empty());
 
-        assertThrows(ApiException.class, () -> discountCouponService.createCoupon(storeId, requestDto, principal));
+        ApiException exception = assertThrows(ApiException.class, () -> discountCouponService.createCoupon(storeId, requestDto, principal));
 
         verify(userRepository).findByEmail(email);
         verify(storeRepository).findByIdAndDeletedFalse(storeId);
         verify(discountCouponRepository, never()).save(discountCoupon);
+
+        assertEquals(ErrorStatus.STORE_NOT_FOUND, exception.getErrorCode());
     }
 
     @Test
@@ -101,10 +105,12 @@ public class DiscountCouponServiceTest {
         given(anotherUser.getId()).willReturn(2L);
         given(store.getUser()).willReturn(anotherUser);
 
-        assertThrows(ApiException.class, () -> discountCouponService.createCoupon(storeId, requestDto, principal));
+        ApiException exception = assertThrows(ApiException.class, () -> discountCouponService.createCoupon(storeId, requestDto, principal));
 
         verify(userRepository).findByEmail(email);
         verify(storeRepository).findByIdAndDeletedFalse(storeId);
         verify(discountCouponRepository, never()).save(discountCoupon);
+
+        assertEquals(ErrorStatus.ROLE_OWNER_FORBIDDEN, exception.getErrorCode());
     }
 }
