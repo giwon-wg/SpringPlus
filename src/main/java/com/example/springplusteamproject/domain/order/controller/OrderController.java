@@ -30,8 +30,8 @@ public class OrderController {
     @PostMapping
     public ResponseEntity<ApiResponse<OrderResponseDTO>> createOrder(
         @RequestBody @Valid OrderRequestDTO requestDTO,
-        @AuthenticationPrincipal CustomUserPrincipal user){
-         OrderResponseDTO responseDTO = orderService.createOrder(requestDTO,user.getId());
+        @AuthenticationPrincipal CustomUserPrincipal principal){
+        OrderResponseDTO responseDTO = orderService.createOrder(requestDTO,principal);
     return ApiResponse.onSuccess(SuccessStatus.ORDER_SUCCESS,responseDTO);
     }
 

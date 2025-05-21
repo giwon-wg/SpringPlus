@@ -10,15 +10,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Price {
     private int priceTotal; //상품 총 금액 (수량 * 단가)
-    private int discount; //할인가 (쿠폰적용)
-    private int finalPrice; // 최종 결제 금액
+    private Long discount; //할인가 (쿠폰적용)
+    private Long finalPrice; // 최종 결제 금액
 
-    public static Price of(int priceTotal, int discount){
-        int finalPrice = priceTotal - discount;
+    public static Price of(int priceTotal, Long discount){
+        Long finalPrice = priceTotal - discount;
         return new Price(priceTotal,discount,finalPrice);
     }
 
-    private Price(int priceTotal, int discount, int finalPrice){
+    private Price(int priceTotal, Long discount, Long finalPrice){
         this.priceTotal = priceTotal;
         this.discount = discount;
         this.finalPrice = finalPrice;

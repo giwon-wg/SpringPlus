@@ -13,8 +13,8 @@ import java.util.List;
 public class OrderResponseDTO {
     private Long id; //주문 Id
     OrderStatus orderStatus;
-    private int totalPrice;
-    private int discount;
+    private Long totalPrice;
+    private Long discount;
     LocalDateTime orderedAt;
     private List<OrderItemResponseDTO> items;
 

@@ -47,6 +47,14 @@ public class Order extends BaseEntity {
         item.setOrder(this);
         }
     }
+    public void updateStatus(){
+        this.orderStatus = OrderStatus.PAID;
+    }
+
+    //쿠폰등록
+    public void setUserCoupon(UserCoupon userCoupon){
+        this.userCoupon = userCoupon;
+    }
 
     @Builder
     public Order(User user, OrderStatus orderStatus, Price price) {
