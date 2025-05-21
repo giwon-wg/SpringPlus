@@ -1,6 +1,7 @@
 package com.example.springplusteamproject.store.service;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.BDDMockito.*;
 import static org.mockito.Mockito.*;
 
 import org.springframework.data.domain.Pageable;
@@ -15,6 +16,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.PageRequest;
 
 import com.example.springplusteamproject.common.exception.ApiException;
+import com.example.springplusteamproject.common.request.CursorPageRequest;
 import com.example.springplusteamproject.common.response.CursorPageResponse;
 import com.example.springplusteamproject.domain.store.dto.request.StoreCheckNameRequestDto;
 import com.example.springplusteamproject.domain.store.dto.request.StoreRequestDto;
@@ -242,10 +244,22 @@ class StoreServiceTest {
         List<Store> mockResult = List.of(store1, store2);
         Pageable pageable = PageRequest.of(0, size);
 
-        CursorPageResponse<StoreListResponseDto> result = storeService.getStoresByCursor(cursor, size);
+        CursorPageRequest request = new CursorPageRequest(cursor, size);
+
+        given(storeRepository.findByCursor(cursor, pageable)).willReturn(mockResult);
+
+        // when
+        CursorPageResponse<StoreListResponseDto> result = storeService.getStoresByCursor(request);
 
         // then
+        assertThat(result.items()).hasSize(2);
+        assertThat(result.items().get(0).getName()).isEqualTo("장미 화원");
+        assertThat(result.items().get(1).getName()).isEqualTo("튤립 화원");
 
+        assertThat(result.pageInfo().nextCursor()).isEqualTo(98L);
+        assertThat(result.pageInfo().hasNext()).isFalse();
+
+        verify(storeRepository).findByCursor(cursor, pageable);
     }
 
     @Test
