@@ -45,6 +45,10 @@ public class StoreServiceImpl implements StoreService {
             throw new ApiException(ErrorStatus.STORE_BAD_REQUEST);
         }
 
+        if (ForbiddenWordUtil.containsForbiddenWord(dto.getName())) {
+            throw new ApiException(ErrorStatus.STORE_BAD_REQUEST);
+        }
+
         Store store = Store.builder()
             .name(dto.getName())
             .address(dto.getAddress())
@@ -96,14 +100,21 @@ public class StoreServiceImpl implements StoreService {
 
         String name = dto.getName();
 
-        if (storeRepository.existsByNameAndDeletedFalse(name)) {
-            return "이미 존재하는 상호명입니다.";
-        }
+        long start = System.nanoTime();
 
-        if (ForbiddenWordUtil.containsForbiddenWord(name)) {
-            return "부적절한 단어가 포함되어 있습니다.";
-        }
+        boolean exists = storeRepository.existsByNameAndDeletedFalse(name);
+        long afterExists = System.nanoTime();
 
+        boolean hasForbidden = ForbiddenWordUtil.containsForbiddenWord(name);
+        long afterForbidden = System.nanoTime();
+
+        System.out.printf("중복이름 조회: %.2fms, 금지어 확인: %.2fms%n",
+            (afterExists - start) / 1_000_000.0,
+            (afterForbidden - afterExists) / 1_000_000.0
+        );
+
+        if (exists) return "이미 존재하는 상호명입니다.";
+        if (hasForbidden) return "부적절한 단어가 포함되어 있습니다.";
         return "사용 가능한 상호명입니다.";
 
     }
