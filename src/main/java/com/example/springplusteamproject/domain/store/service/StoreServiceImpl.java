@@ -111,7 +111,10 @@ public class StoreServiceImpl implements StoreService {
     @Transactional(readOnly = true)
     @Override
     public CursorPageResponse<StoreListResponseDto> getStoresByCursor(CursorPageRequest cursorPageRequest) {
-        List<Store> stores = storeRepository.findByCursor(cursorPageRequest.getCursor(), cursorPageRequest.getSize());
+
+        Pageable pageable = PageRequest.of(0, cursorPageRequest.getSize());
+
+        List<Store> stores = storeRepository.findByCursor(cursorPageRequest.getCursor(), pageable);
 
         List<StoreListResponseDto> dtoList = stores.stream()
             .map(StoreListResponseDto::fromEntity).toList();

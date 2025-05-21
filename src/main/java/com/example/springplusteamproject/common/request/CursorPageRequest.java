@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class CursorPageRequest {
+
     @Schema(description = "이전 요청에서 마지막으로 본 데이터의 ID", nullable = true)
     private Long cursor = 0L;
 

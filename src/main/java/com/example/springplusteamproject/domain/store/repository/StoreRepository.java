@@ -33,7 +33,7 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
     @Query("SELECT s FROM Store s WHERE s.deleted = false "
         + "AND (:cursor IS NULL OR s.id < :cursor) "
         + "ORDER BY s.id DESC")
-    List<Store> findByCursor(Long cursor, int size);
+    List<Store> findByCursor(@Param("cursor") Long cursor, Pageable pageable);
 
     List<Store> findByDeletedFalse();
 }
