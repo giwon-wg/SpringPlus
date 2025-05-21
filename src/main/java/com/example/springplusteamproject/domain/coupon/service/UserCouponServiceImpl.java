@@ -37,9 +37,9 @@ public class UserCouponServiceImpl implements UserCouponService {
         validateActivateStore(storeId);
 
         List<Long> couponIds = userCouponRepository.findHavingCouponIds(user.getId(), storeId);
-        List<DiscountCoupon> availableCouponList = discountCouponRepository.findIssuableCouponList(couponIds, storeId);
+        List<DiscountCoupon> issuableCouponList = discountCouponRepository.findIssuableCouponList(couponIds, storeId);
 
-        return availableCouponList.stream().map(IssuableUserCouponResponseDto::from).collect(Collectors.toList());
+        return issuableCouponList.stream().map(IssuableUserCouponResponseDto::from).collect(Collectors.toList());
     }
 
     @Override
@@ -51,9 +51,9 @@ public class UserCouponServiceImpl implements UserCouponService {
         validateCouponNotIssued(user.getId(), couponId);
 
         validateActivateStore(storeId);
-        DiscountCoupon availableCoupon = validateAvailableCoupon(storeId, couponId);
+        DiscountCoupon issuableCoupon = validateIssuableCoupon(storeId, couponId);
 
-        return IssuableUserCouponResponseDto.from(availableCoupon);
+        return IssuableUserCouponResponseDto.from(issuableCoupon);
     }
 
     @Override
@@ -64,13 +64,13 @@ public class UserCouponServiceImpl implements UserCouponService {
         validateCouponNotIssued(user.getId(), couponId);
 
         validateActivateStore(storeId);
-        DiscountCoupon availableCoupon = validateAvailableCoupon(storeId, couponId);
+        DiscountCoupon issuableCoupon = validateIssuableCoupon(storeId, couponId);
 
-        UserCoupon issueCoupon = createUserCoupon(user, availableCoupon);
+        UserCoupon issueCoupon = createUserCoupon(user, issuableCoupon);
         UserCoupon savedCoupon = userCouponRepository.save(issueCoupon);
-        availableCoupon.decreaseStock();
+        issuableCoupon.decreaseStock();
 
-        return UserCouponIssueResponseDto.from(availableCoupon, savedCoupon);
+        return UserCouponIssueResponseDto.from(issuableCoupon, savedCoupon);
     }
 
     @Override
@@ -95,12 +95,12 @@ public class UserCouponServiceImpl implements UserCouponService {
         return user;
     }
 
-    private DiscountCoupon validateAvailableCoupon(Long storeId, Long couponId) {
+    private DiscountCoupon validateIssuableCoupon(Long storeId, Long couponId) {
 
-        DiscountCoupon availableCoupon = discountCouponRepository.findAvailableCoupon(storeId, couponId)
+        DiscountCoupon issuableCoupon = discountCouponRepository.findIssuableCoupon(storeId, couponId)
             .orElseThrow(() -> new ApiException(ErrorStatus.COUPON_NOT_FOUND));
 
-        return availableCoupon;
+        return issuableCoupon;
     }
 
     private void validateActivateStore(Long storeId) {

@@ -1,6 +1,10 @@
 package com.example.springplusteamproject.domain.flower.entity;
 
+import static com.example.springplusteamproject.common.status.ErrorStatus.FLOWER_OUT_OF_STOCK;
+
 import com.example.springplusteamproject.common.entity.BaseEntity;
+import com.example.springplusteamproject.common.exception.ApiException;
+import com.example.springplusteamproject.common.status.ErrorStatus;
 import com.example.springplusteamproject.domain.flower.dto.request.FlowerRequestDto;
 import com.example.springplusteamproject.domain.flower.enums.Color;
 import com.example.springplusteamproject.domain.flower.enums.Season;
@@ -119,6 +123,14 @@ public class Flower extends BaseEntity {
         if (dto.getStock() != null) {
             this.stock = dto.getStock();
         }
+    }
+
+    public void decreaseStock(int quantity) {
+        if (this.stock < quantity) {
+            throw new ApiException(FLOWER_OUT_OF_STOCK);
+        }
+
+        this.stock -= quantity;
     }
 
 }

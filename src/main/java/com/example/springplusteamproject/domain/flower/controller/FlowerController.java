@@ -43,7 +43,8 @@ public class FlowerController {
         @Valid @RequestBody FlowerRequestDto.Create request,
         @AuthenticationPrincipal CustomUserPrincipal principal
     ) {
-        return ApiResponse.onSuccess(FLOWER_CREATE_SUCCESS, flowerService.createFlower(storeId, request, principal.getId()));
+        return ApiResponse.onSuccess(FLOWER_CREATE_SUCCESS,
+            flowerService.createFlower(storeId, request, principal.getId()));
     }
 
     @Operation(
@@ -73,7 +74,8 @@ public class FlowerController {
         @RequestParam(defaultValue = "1") int page,
         @RequestParam(defaultValue = "10") int size
     ) {
-        return ApiResponse.onSuccess(FLOWER_OPERATION_SUCCESS, flowerService.getMyFlowers(storeId, page, size));
+        return ApiResponse.onSuccess(FLOWER_OPERATION_SUCCESS,
+            flowerService.getMyFlowers(storeId, page, size));
     }
 
     @Operation(
@@ -86,7 +88,8 @@ public class FlowerController {
         @PathVariable Long storeId,
         @PathVariable Long flowerId
     ) {
-        return ApiResponse.onSuccess(FLOWER_OPERATION_SUCCESS, flowerService.getFlowerDetails(storeId, flowerId));
+        return ApiResponse.onSuccess(FLOWER_OPERATION_SUCCESS,
+            flowerService.getFlowerDetails(storeId, flowerId));
     }
 
     @Operation(

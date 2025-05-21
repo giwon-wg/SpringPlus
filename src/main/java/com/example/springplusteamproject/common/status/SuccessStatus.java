@@ -171,7 +171,7 @@ public enum SuccessStatus implements BaseCode {
 
 
     // Order O000
-
+    ORDER_SUCCESS(HttpStatus.CREATED, "O002","주문등록에 성공했습니다.");
 
 
 

@@ -13,6 +13,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Setter
+@Builder
 public class StoreRequestDto {
 
     @Schema(description = "가게 이름", example = "이쁜화원")
