@@ -31,7 +31,6 @@ public class DiscountCouponServiceImpl implements DiscountCouponService {
         User user = userRepository.findByEmail(principal.getUsername())
             .orElseThrow(() -> new ApiException(ErrorStatus.USER_NOT_FOUND));
         user.validateDelete();
-        user.validateOwner();
 
         Store store = storeRepository.findByIdAndDeletedFalse(storeId)
             .orElseThrow(() -> new ApiException(ErrorStatus.STORE_NOT_FOUND));
