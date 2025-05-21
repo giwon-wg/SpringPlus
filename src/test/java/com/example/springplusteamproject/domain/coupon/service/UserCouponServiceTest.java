@@ -1,16 +1,14 @@
 package com.example.springplusteamproject.domain.coupon.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.example.springplusteamproject.common.exception.ApiException;
 import com.example.springplusteamproject.common.status.ErrorStatus;
-import com.example.springplusteamproject.domain.coupon.dto.request.DiscountCouponRequestDto;
 import com.example.springplusteamproject.domain.coupon.dto.response.IssuableUserCouponResponseDto;
 import com.example.springplusteamproject.domain.coupon.dto.response.UserCouponIssueResponseDto;
 import com.example.springplusteamproject.domain.coupon.entity.DiscountCoupon;
@@ -20,9 +18,9 @@ import com.example.springplusteamproject.domain.coupon.repository.UserCouponRepo
 import com.example.springplusteamproject.domain.store.entity.Store;
 import com.example.springplusteamproject.domain.store.repository.StoreRepository;
 import com.example.springplusteamproject.domain.user.entity.User;
+import com.example.springplusteamproject.domain.user.entity.UserRole;
 import com.example.springplusteamproject.domain.user.repository.UserRepository;
 import com.example.springplusteamproject.security.CustomUserPrincipal;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,57 +48,62 @@ class UserCouponServiceTest {
     @InjectMocks
     private UserCouponServiceImpl userCouponService;
 
-    private DiscountCouponRequestDto requestDto = new DiscountCouponRequestDto("5000원 할인", 5000L, LocalDate.now(),
-            LocalDate.now(), 100L);
     private DiscountCoupon issuedDiscountCoupon;
     private DiscountCoupon discountCoupon;
     private CustomUserPrincipal principal;
     private UserCoupon userCoupon;
     private Long storeId;
-    private String email;
     private Store store;
     private User user;
 
     @BeforeEach
     void setUp() {
         issuedDiscountCoupon = DiscountCoupon.builder()
-                .id(2L)
-                .build();
+            .id(2L)
+            .couponName("5000원 할인")
+            .discount(5000L)
+            .stock(500L)
+            .build();
         discountCoupon = DiscountCoupon.builder()
-                .id(1L)
-                .couponName("쿠폰이름")
-                .stock(10L)
-                .build();
+            .id(1L)
+            .couponName("5000원 할인")
+            .discount(5000L)
+            .stock(500L)
+            .build();
         userCoupon = UserCoupon.builder()
-                .id(1L)
-                .discountCoupon(discountCoupon)
-                .build();
-
+            .id(1L)
+            .discountCoupon(discountCoupon)
+            .build();
         storeId = 1L;
-        principal = mock(CustomUserPrincipal.class);
-        user = mock(User.class);
-        store = mock(Store.class);
-        email = "test@gmail.com";
+        user = User.builder()
+            .id(1L)
+            .nickname("가게 주인")
+            .email("1@gmail.com")
+            .userRole(UserRole.OWNER)
+            .build();
+        store = Store.builder()
+            .id(1L)
+            .name("가게 이름")
+            .user(user)
+            .build();
+        principal = new CustomUserPrincipal(user);
     }
 
     @Test
     void 발급_가능한_쿠폰_목록_조회에_성공한다() {
 
-        given(principal.getUsername()).willReturn(email);
-        given(userRepository.findByEmail(email)).willReturn(Optional.of(user));
+        given(userRepository.findByEmail(principal.getUsername())).willReturn(Optional.of(user));
         given(storeRepository.findByIdAndDeletedFalse(storeId)).willReturn(Optional.of(store));
         given(userCouponRepository.findHavingCouponIds(user.getId(), storeId)).willReturn(List.of(2L));
         given(discountCouponRepository.findIssuableCouponList(List.of(2L), storeId)).willReturn(
-                List.of(discountCoupon));
+            List.of(discountCoupon));
 
         List<IssuableUserCouponResponseDto> responseDtos = userCouponService.findIssuableUserCoupons(storeId,
-                principal);
-        assertEquals(1, responseDtos.size());
+            principal);
 
-        verify(userRepository).findByEmail(email);
-        verify(storeRepository).findByIdAndDeletedFalse(storeId);
-        verify(userCouponRepository).findHavingCouponIds(user.getId(), storeId);
-        verify(discountCouponRepository).findIssuableCouponList(List.of(2L), storeId);
+        assertThat(responseDtos).hasSize(1);
+        assertThat(responseDtos.get(0).getCouponName()).isEqualTo(discountCoupon.getCouponName());
+        assertThat(responseDtos.get(0).getDiscount()).isEqualTo(discountCoupon.getDiscount());
     }
 
     @Test
@@ -108,38 +111,32 @@ class UserCouponServiceTest {
 
         Long couponId = 1L;
 
-        given(principal.getUsername()).willReturn(email);
-        given(userRepository.findByEmail(email)).willReturn(Optional.of(user));
+        given(userRepository.findByEmail(principal.getUsername())).willReturn(Optional.of(user));
         given(userCouponRepository.existsByUser_IdAndDiscountCoupon_Id(user.getId(), couponId)).willReturn(false);
         given(storeRepository.findByIdAndDeletedFalse(storeId)).willReturn(Optional.of(store));
         given(discountCouponRepository.findIssuableCoupon(storeId, couponId)).willReturn(Optional.of(discountCoupon));
 
         IssuableUserCouponResponseDto responseDto = userCouponService.findIssuableUserCoupon(storeId, couponId,
-                principal);
+            principal);
 
-        verify(userRepository).findByEmail(email);
-        verify(userCouponRepository).existsByUser_IdAndDiscountCoupon_Id(user.getId(), couponId);
-        verify(storeRepository).findByIdAndDeletedFalse(storeId);
-        verify(discountCouponRepository).findIssuableCoupon(storeId, couponId);
+        assertThat(responseDto.getCouponName()).isEqualTo(discountCoupon.getCouponName());
+        assertThat(responseDto.getDiscount()).isEqualTo(discountCoupon.getDiscount());
     }
 
     @Test
     void 이미_발급_받은_쿠폰은_상세_조회에_실패한다() {
 
-        Long couponId = 1L;
+        Long issuedCouponId = 2L;
 
-        given(principal.getUsername()).willReturn(email);
-        given(userRepository.findByEmail(email)).willReturn(Optional.of(user));
-        given(userCouponRepository.existsByUser_IdAndDiscountCoupon_Id(user.getId(), couponId)).willReturn(true);
+        given(userRepository.findByEmail(principal.getUsername())).willReturn(Optional.of(user));
+        given(userCouponRepository.existsByUser_IdAndDiscountCoupon_Id(user.getId(), issuedCouponId)).willReturn(true);
 
-        ApiException exception = assertThrows(ApiException.class, () -> userCouponService.findIssuableUserCoupon(storeId, couponId, principal));
+        ApiException exception = assertThrows(ApiException.class,
+            () -> userCouponService.findIssuableUserCoupon(storeId, issuedCouponId, principal));
 
-        assertEquals(ErrorStatus.COUPON_ALREADY_ISSUED, exception.getErrorCode());
+        verify(discountCouponRepository, never()).findIssuableCoupon(storeId, issuedCouponId);
 
-        verify(userRepository).findByEmail(email);
-        verify(userCouponRepository).existsByUser_IdAndDiscountCoupon_Id(user.getId(), couponId);
-        verify(storeRepository, never()).findByIdAndDeletedFalse(storeId);
-        verify(discountCouponRepository, never()).findIssuableCoupon(storeId, couponId);
+        assertThat(exception.getErrorCode()).isEqualTo(ErrorStatus.COUPON_ALREADY_ISSUED);
     }
 
     @Test
@@ -147,56 +144,47 @@ class UserCouponServiceTest {
 
         Long couponId = 1L;
 
-        given(principal.getUsername()).willReturn(email);
-        given(userRepository.findByEmail(email)).willReturn(Optional.of(user));
+        given(userRepository.findByEmail(principal.getUsername())).willReturn(Optional.of(user));
         given(userCouponRepository.existsByUser_IdAndDiscountCoupon_Id(user.getId(), couponId)).willReturn(false);
         given(storeRepository.findByIdAndDeletedFalse(storeId)).willReturn(Optional.of(store));
         given(discountCouponRepository.findIssuableCoupon(storeId, couponId)).willReturn(Optional.of(discountCoupon));
         given(userCouponRepository.save(any(UserCoupon.class))).willReturn(userCoupon);
 
-        userCouponService.issueUserCoupon(storeId, couponId, principal);
+        UserCouponIssueResponseDto responseDto = userCouponService.issueUserCoupon(storeId, couponId, principal);
 
-        verify(userRepository).findByEmail(email);
-        verify(userCouponRepository).existsByUser_IdAndDiscountCoupon_Id(user.getId(), couponId);
-        verify(storeRepository).findByIdAndDeletedFalse(storeId);
-        verify(discountCouponRepository).findIssuableCoupon(storeId, couponId);
-        verify(userCouponRepository).save(any(UserCoupon.class));
-
-        assertEquals(discountCoupon.getStock(), 9L);
+        assertThat(discountCoupon.getStock()).isEqualTo(499L);
+        assertThat(responseDto.getCouponName()).isEqualTo(discountCoupon.getCouponName());
+        assertThat(responseDto.getDiscount()).isEqualTo(discountCoupon.getDiscount());
     }
 
     @Test
     void 기존에_발급받은_쿠폰은_쿠폰_발급에_실패한다() {
 
-        Long couponId = 1L;
+        Long issuedCouponId = 2L;
 
-        given(principal.getUsername()).willReturn(email);
-        given(userRepository.findByEmail(email)).willReturn(Optional.of(user));
-        given(userCouponRepository.existsByUser_IdAndDiscountCoupon_Id(user.getId(), couponId)).willReturn(true);
+        given(userRepository.findByEmail(principal.getUsername())).willReturn(Optional.of(user));
+        given(userCouponRepository.existsByUser_IdAndDiscountCoupon_Id(user.getId(), issuedCouponId)).willReturn(true);
 
-        ApiException exception = assertThrows(ApiException.class, () -> userCouponService.issueUserCoupon(storeId, couponId, principal));
+        ApiException exception = assertThrows(ApiException.class,
+            () -> userCouponService.issueUserCoupon(storeId, issuedCouponId, principal));
 
-        verify(userRepository).findByEmail(email);
-        verify(userCouponRepository).existsByUser_IdAndDiscountCoupon_Id(user.getId(), couponId);
         verify(storeRepository, never()).findByIdAndDeletedFalse(storeId);
-        verify(discountCouponRepository, never()).findIssuableCoupon(storeId, couponId);
+        verify(discountCouponRepository, never()).findIssuableCoupon(storeId, issuedCouponId);
         verify(userCouponRepository, never()).save(any(UserCoupon.class));
 
-        assertEquals(ErrorStatus.COUPON_ALREADY_ISSUED, exception.getErrorCode());
+        assertThat(exception.getErrorCode()).isEqualTo(ErrorStatus.COUPON_ALREADY_ISSUED);
     }
 
     @Test
     void 발급받은_쿠폰_목록_조회에_성공한다() {
 
-        given(principal.getUsername()).willReturn(email);
-        given(userRepository.findByEmail(email)).willReturn(Optional.of(user));
+        given(userRepository.findByEmail(principal.getUsername())).willReturn(Optional.of(user));
         given(userCouponRepository.findAllByUser_idAndIsUsedFalse(user.getId())).willReturn(List.of(userCoupon));
 
         List<UserCouponIssueResponseDto> responseDtos = userCouponService.findMyUserCoupons(principal);
 
-        verify(userRepository).findByEmail(email);
-        verify(userCouponRepository).findAllByUser_idAndIsUsedFalse(user.getId());
-
-        assertEquals(responseDtos.size(), 1);
+        assertThat(responseDtos.size()).isEqualTo(1);
+        assertThat(responseDtos.get(0).getCouponName()).isEqualTo(userCoupon.getDiscountCoupon().getCouponName());
+        assertThat(responseDtos.get(0).getDiscount()).isEqualTo(userCoupon.getDiscountCoupon().getDiscount());
     }
 }
