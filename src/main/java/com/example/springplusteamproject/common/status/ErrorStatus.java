@@ -109,8 +109,9 @@ public enum ErrorStatus implements BaseErrorCode {
 
 
     // Flower F000
-
-
+    FLOWER_NOT_FOUND(HttpStatus.NOT_FOUND, "F007", "선택한 꽃 상품을 찾을 수 없습니다."),
+    FLOWER_ACCESS_DENIED(HttpStatus.FORBIDDEN, "F006", "선택한 꽃 상품에 대한 권한이 없습니다."),
+    FLOWER_OUT_OF_STOCK(HttpStatus.BAD_REQUEST, "F004", "선택한 꽃 상품의 재고가 소진되었습니다."),
 
 
 
@@ -139,7 +140,9 @@ public enum ErrorStatus implements BaseErrorCode {
 
 
     // Coupon C000
-
+    COUPON_NOT_FOUND(HttpStatus.NOT_FOUND, "C007", "해당 쿠폰이 없습니다."),
+    COUPON_ALREADY_ISSUED(HttpStatus.CONFLICT, "C008", "이미 발급받은 쿠폰입니다."),
+    COUPON_OUT_OF_STOCK(HttpStatus.BAD_REQUEST, "C004", "쿠폰의 수량이 소진되었습니다."),
 
 
 
@@ -169,8 +172,7 @@ public enum ErrorStatus implements BaseErrorCode {
 
 
     // Order O000
-
-
+    INVALID_ORDER_QUANTITY(HttpStatus.BAD_REQUEST, "O004", "수량은 1개 이상이어야 합니다."),
 
 
 
