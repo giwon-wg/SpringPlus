@@ -14,5 +14,5 @@ public interface DiscountCouponRepository extends JpaRepository<DiscountCoupon, 
                                                  @Param("storeId") Long storeId);
 
     @Query("SELECT dc FROM DiscountCoupon dc WHERE dc.id = :couponId AND dc.store.id = :storeId")
-    Optional<DiscountCoupon> findAvailableCoupon(@Param("storeId") Long storeId, @Param("couponId") Long couponId);
+    Optional<DiscountCoupon> findIssuableCoupon(@Param("storeId") Long storeId, @Param("couponId") Long couponId);
 }
