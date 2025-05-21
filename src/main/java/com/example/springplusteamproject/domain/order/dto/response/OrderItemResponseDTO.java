@@ -12,8 +12,8 @@ public class OrderItemResponseDTO{
     private String flowerName; //꽃
     private int itemPrice; // 단가 * 수량 (1메뉴 총액)
     private int quantity; // 수량
-    private int itemDiscount; // 할인
-    private int totalPrice; //최종 금액
+    private Long itemDiscount; // 할인
+    private Long totalPrice; //최종 금액
 
     public static OrderItemResponseDTO from(OrderItem item){
         return OrderItemResponseDTO.builder()
