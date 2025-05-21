@@ -54,7 +54,6 @@ public class StoreServiceImpl implements StoreService {
             throw new ApiException(ErrorStatus.STORE_BAD_REQUEST);
         }
 
-
         Store store = Store.builder()
             .name(dto.getName())
             .address(dto.getAddress())

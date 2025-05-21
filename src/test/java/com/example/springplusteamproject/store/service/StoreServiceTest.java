@@ -3,6 +3,8 @@ package com.example.springplusteamproject.store.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
+import static org.mockito.Mockito.*;
+
 import org.springframework.data.domain.Pageable;
 import java.time.LocalTime;
 import java.util.List;
