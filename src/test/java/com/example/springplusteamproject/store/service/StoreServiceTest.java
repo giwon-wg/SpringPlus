@@ -2,7 +2,6 @@ package com.example.springplusteamproject.store.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
-import static org.mockito.Mockito.*;
 
 import org.springframework.data.domain.Pageable;
 import java.time.LocalTime;
@@ -18,6 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import com.example.springplusteamproject.common.exception.ApiException;
 import com.example.springplusteamproject.common.request.CursorPageRequest;
 import com.example.springplusteamproject.common.response.CursorPageResponse;
+import com.example.springplusteamproject.common.status.ErrorStatus;
 import com.example.springplusteamproject.domain.store.dto.request.StoreCheckNameRequestDto;
 import com.example.springplusteamproject.domain.store.dto.request.StoreRequestDto;
 import com.example.springplusteamproject.domain.store.dto.response.StoreListResponseDto;
@@ -80,8 +80,11 @@ class StoreServiceTest {
             "09:00",
             "18:00"
         );
+        when(storeRepository.existsByUserIdAndDeletedFalse(user.getId()))
+            .thenReturn(false);
         when(storeRepository.existsByNameAndDeletedFalse(dto.getName()))
             .thenReturn(false);
+
 
         Store store = Store.builder()
             .name(dto.getName())
@@ -109,6 +112,32 @@ class StoreServiceTest {
         assertThat(response.getMinOrderPrice()).isEqualTo(15000L);
         assertThat(response.getOpenTime()).isEqualTo("09:00");
         assertThat(response.getCloseTime()).isEqualTo("18:00");
+    }
+
+    @Test
+    void 가게_생성_금지어_예외() {
+        // given
+        StoreRequestDto dto = new StoreRequestDto(
+            "운영자 카페",
+            "서울시 강남구",
+            "image.png",
+            "010-1234-5678",
+            10000L,
+            "09:00",
+            "21:00"
+        );
+
+        CustomUserPrincipal principal = new CustomUserPrincipal(user);
+
+        when(storeRepository.existsByUserIdAndDeletedFalse(principal.getId())).thenReturn(false);
+        when(storeRepository.existsByNameAndDeletedFalse(dto.getName())).thenReturn(false);
+
+        // when & then
+        ApiException exception = assertThrows(ApiException.class, () ->
+            storeService.createStore(dto, principal)
+        );
+
+        assertEquals(ErrorStatus.STORE_BAD_REQUEST, exception.getErrorCode());
     }
 
     @Test

@@ -26,7 +26,9 @@ import com.example.springplusteamproject.domain.user.entity.User;
 import com.example.springplusteamproject.security.CustomUserPrincipal;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class StoreServiceImpl implements StoreService {
@@ -37,17 +39,21 @@ public class StoreServiceImpl implements StoreService {
     @Override
     public StoreResponseDto createStore(StoreRequestDto dto, CustomUserPrincipal principal) {
 
-        if (storeRepository.existsByNameAndDeletedFalse(dto.getName())) {
-            throw new ApiException(ErrorStatus.STORE_BAD_REQUEST);
-        }
-
         if (storeRepository.existsByUserIdAndDeletedFalse(principal.getId())) {
+            log.warn("[Store - 가게 생성] 유저 Id 없음, userId: {}", principal.getId());
             throw new ApiException(ErrorStatus.STORE_BAD_REQUEST);
         }
 
         if (ForbiddenWordUtil.containsForbiddenWord(dto.getName())) {
+            log.warn("[Store - 가게 생성] 가게 이름에 금지어 포함, storeName: {}", dto.getName());
             throw new ApiException(ErrorStatus.STORE_BAD_REQUEST);
         }
+
+        if (storeRepository.existsByNameAndDeletedFalse(dto.getName())) {
+            log.warn("[Store - 가게 생성] 가게 이름 중복, storeName: {}", dto.getName());
+            throw new ApiException(ErrorStatus.STORE_BAD_REQUEST);
+        }
+
 
         Store store = Store.builder()
             .name(dto.getName())
@@ -62,6 +68,7 @@ public class StoreServiceImpl implements StoreService {
             .build();
 
         Store saved = storeRepository.save(store);
+        log.info("[Store - 가게 생성] 가게 생성 성공, userId={} storeId={}", principal.getId(), saved.getId());
         return toResponseDto(saved);
     }
 
@@ -70,15 +77,20 @@ public class StoreServiceImpl implements StoreService {
     public void deleteStore(CustomUserPrincipal principal) {
 
         Store store = storeRepository.findByUserIdAndDeletedFalse(principal.getId())
-            .orElseThrow(() -> new ApiException(ErrorStatus.STORE_NOT_FOUND));
+            .orElseThrow(() -> {
+                log.warn("[Store - 가게 폐업] userId에 해당하는 가게 없음, userId: {}", principal.getId());
+                return new ApiException(ErrorStatus.STORE_NOT_FOUND);
+            });
 
+        log.info("[Store - 가게 폐업] 가게 폐업 성공, userId={}", principal.getId());
         store.setDeleted();
+
     }
 
     @Transactional(readOnly=true)
     @Override
     public List<StoreListResponseDto> getAllStores() {
-
+        log.info("[Store - 가게 전체 조회] 가게 전체 조회 성공");
         return storeRepository.findByDeletedFalse().stream()
             .map(this::toListResponseDto)
             .collect(Collectors.toList());
@@ -89,8 +101,11 @@ public class StoreServiceImpl implements StoreService {
     public StoreResponseDto getStoreById(Long id) {
 
         Store store = storeRepository.findByIdAndDeletedFalse(id)
-            .orElseThrow(() -> new ApiException(ErrorStatus.STORE_NOT_FOUND));
-
+            .orElseThrow(() -> {
+                log.warn("[Store - ID 기반 조회] Id에 해당하는 가게 없음, storeId: {}", id);
+                return new ApiException(ErrorStatus.STORE_NOT_FOUND);
+            });
+        log.info("[Store - 가게 단건 조회] 가게 단건 조회 성공, storeId: {}", id);
         return toResponseDto(store);
     }
 
@@ -113,8 +128,15 @@ public class StoreServiceImpl implements StoreService {
             (afterForbidden - afterExists) / 1_000_000.0
         );
 
-        if (exists) return "이미 존재하는 상호명입니다.";
-        if (hasForbidden) return "부적절한 단어가 포함되어 있습니다.";
+        if (exists) {
+            log.warn("[Store - 이름 확인] 가게 이름에 금지어 포함, storeName: {}", dto.getName());
+            return "이미 존재하는 상호명입니다.";
+        }
+        if (hasForbidden) {
+            log.warn("[Store - 이름 확인] 가게 이름에 금지어 포함, storeName: {}", dto.getName());
+            return "부적절한 단어가 포함되어 있습니다.";
+        }
+        log.info("[Store - 이름 확인] 가게 이름 확인 성공, storeName: {}", dto.getName());
         return "사용 가능한 상호명입니다.";
 
     }
@@ -130,6 +152,7 @@ public class StoreServiceImpl implements StoreService {
         List<StoreListResponseDto> dtoList = stores.stream()
             .map(StoreListResponseDto::fromEntity).toList();
 
+        log.info("[Store - 커서기반 전체 조회] 커서기반 전체 조회 성공");
         return CursorPaginationUtil.paginate(dtoList, cursorPageRequest.getSize(), StoreListResponseDto::getId);
     }
 
