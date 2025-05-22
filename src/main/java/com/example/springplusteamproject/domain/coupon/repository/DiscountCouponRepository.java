@@ -9,10 +9,10 @@ import org.springframework.data.repository.query.Param;
 
 public interface DiscountCouponRepository extends JpaRepository<DiscountCoupon, Long> {
 
-    @Query("SELECT dc FROM DiscountCoupon dc WHERE dc.id NOT IN :couponIds AND dc.store.id = :storeId")
+    @Query("SELECT dc FROM DiscountCoupon dc WHERE dc.id NOT IN :couponIds AND dc.store.id = :storeId AND dc.isDeleted = false")
     List<DiscountCoupon> findIssuableCouponList(@Param("couponIds") List<Long> couponIds,
                                                  @Param("storeId") Long storeId);
 
-    @Query("SELECT dc FROM DiscountCoupon dc WHERE dc.id = :couponId AND dc.store.id = :storeId")
+    @Query("SELECT dc FROM DiscountCoupon dc WHERE dc.id = :couponId AND dc.store.id = :storeId AND dc.isDeleted = false")
     Optional<DiscountCoupon> findIssuableCoupon(@Param("storeId") Long storeId, @Param("couponId") Long couponId);
 }
