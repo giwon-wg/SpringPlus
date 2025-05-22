@@ -34,14 +34,14 @@ public class DiscountCouponBulkInsertTest {
     private StoreRepository storeRepository;
 
     @Test
-    @DisplayName("100만개 쿠폰 데이터 삽입")
+    @DisplayName("1만개 쿠폰 데이터 삽입")
     @Transactional
     @Rollback(false)
     void insertMillionCoupons() {
         Store testStore = createTestStore();
 
-        int totalCoupons = 1000000;
-        int batchSize = 10000;
+        int totalCoupons = 10000;
+        int batchSize = 100;
         List<DiscountCoupon> buffer = new ArrayList<>(batchSize);
         String targetCouponName = "target_coupon_special";
 
@@ -50,7 +50,7 @@ public class DiscountCouponBulkInsertTest {
         for (int i = 1; i <= totalCoupons; i++) {
             String couponName;
 
-            if (i == 777777) {
+            if (i == 7777) {
                 couponName = targetCouponName;
             } else {
                 couponName = "Coupon_" + UUID.randomUUID().toString().substring(0, 8);
