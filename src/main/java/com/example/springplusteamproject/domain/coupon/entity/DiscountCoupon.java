@@ -10,6 +10,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -22,7 +23,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @Entity
 @Builder
-@Table(name = "discount_coupon")
+@Table(name = "discount_coupon", indexes = @Index(name = "idx_store_deleted_id", columnList = "store_id, is_deleted, id"))
 @NoArgsConstructor
 @AllArgsConstructor
 public class DiscountCoupon extends BaseEntity {
@@ -56,14 +57,14 @@ public class DiscountCoupon extends BaseEntity {
     @Column(nullable = false)
     private boolean isDeleted;
 
-    public void delete() {
-        this.isDeleted = true;
-    }
-
     public void decreaseStock() {
         if (this.stock <= 0) {
             throw new ApiException(ErrorStatus.COUPON_OUT_OF_STOCK);
         }
         this.stock--;
+
+        if (this.stock == 0) {
+            this.isDeleted = true;
+        }
     }
 }

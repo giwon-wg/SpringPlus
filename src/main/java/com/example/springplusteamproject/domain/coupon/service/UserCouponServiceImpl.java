@@ -15,9 +15,12 @@ import com.example.springplusteamproject.security.CustomUserPrincipal;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserCouponServiceImpl implements UserCouponService {
@@ -31,13 +34,17 @@ public class UserCouponServiceImpl implements UserCouponService {
     @Transactional(readOnly = true)
     public List<IssuableUserCouponResponseDto> findIssuableUserCoupons(Long storeId, CustomUserPrincipal principal) {
 
+        Long startTime = System.nanoTime();
         User user = validateActivateUser(principal.getUsername());
 
-        // TODO store의 예외 코드 추가되면 해당 예외 코드로 수정
         validateActivateStore(storeId);
 
         List<Long> couponIds = userCouponRepository.findHavingCouponIds(user.getId(), storeId);
         List<DiscountCoupon> issuableCouponList = discountCouponRepository.findIssuableCouponList(couponIds, storeId);
+
+        Long endTime = System.nanoTime();
+        Long totalTIme = (endTime - startTime) / 1_000_000;
+        log.info("걸린 시간: " + totalTIme + "ms");
 
         return issuableCouponList.stream().map(IssuableUserCouponResponseDto::from).collect(Collectors.toList());
     }
@@ -47,11 +54,16 @@ public class UserCouponServiceImpl implements UserCouponService {
     public IssuableUserCouponResponseDto findIssuableUserCoupon(Long storeId, Long couponId,
                                                                 CustomUserPrincipal principal) {
 
+        Long startTime = System.nanoTime();
         User user = validateActivateUser(principal.getUsername());
         validateCouponNotIssued(user.getId(), couponId);
 
         validateActivateStore(storeId);
         DiscountCoupon issuableCoupon = validateIssuableCoupon(storeId, couponId);
+
+        Long endTime = System.nanoTime();
+        Long totalTIme = (endTime - startTime) / 1_000_000;
+        log.info("걸린 시간: " + totalTIme + "ms");
 
         return IssuableUserCouponResponseDto.from(issuableCoupon);
     }
@@ -105,7 +117,7 @@ public class UserCouponServiceImpl implements UserCouponService {
 
     private void validateActivateStore(Long storeId) {
 
-        storeRepository.findByIdAndDeletedFalse(storeId).orElseThrow(() -> new ApiException(ErrorStatus.FORBIDDEN));
+        storeRepository.findByIdAndDeletedFalse(storeId).orElseThrow(() -> new ApiException(ErrorStatus.STORE_NOT_FOUND));
     }
 
     private void validateCouponNotIssued(Long userId, Long couponId) {
