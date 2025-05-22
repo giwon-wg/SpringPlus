@@ -1,4 +1,4 @@
-package com.example.springplusteamproject.domain.coupon;
+package com.example.springplusteamproject.domain.coupon.service;
 
 import com.example.springplusteamproject.domain.coupon.entity.DiscountCoupon;
 import com.example.springplusteamproject.domain.coupon.repository.DiscountCouponRepository;
@@ -37,7 +37,7 @@ public class DiscountCouponBulkInsertTest {
     @DisplayName("1만개 쿠폰 데이터 삽입")
     @Transactional
     @Rollback(false)
-    void insertMillionCoupons() {
+    void insertTenThousandCoupons() {
         Store testStore = createTestStore();
 
         int totalCoupons = 10000;
@@ -56,7 +56,7 @@ public class DiscountCouponBulkInsertTest {
                 couponName = "Coupon_" + UUID.randomUUID().toString().substring(0, 8);
             }
 
-            DiscountCoupon coupon = createCoupon(testStore, couponName, i);
+            DiscountCoupon coupon = createCoupon(testStore, couponName);
             buffer.add(coupon);
 
             if (i % batchSize == 0) {
@@ -73,7 +73,7 @@ public class DiscountCouponBulkInsertTest {
         }
 
         long endTime = System.currentTimeMillis();
-        System.out.println("Million coupons insert success");
+        System.out.println("Ten thousand coupons insert success");
         System.out.println("Total time taken: " + (endTime - startTime) / 1000 + " seconds");
     }
 
@@ -100,7 +100,7 @@ public class DiscountCouponBulkInsertTest {
         return storeRepository.save(store);
     }
 
-    private DiscountCoupon createCoupon(Store store, String couponName, int index) {
+    private DiscountCoupon createCoupon(Store store, String couponName) {
         Random random = new Random();
         LocalDate now = LocalDate.now();
 
