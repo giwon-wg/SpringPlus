@@ -34,14 +34,8 @@ public class FlowerServiceImpl implements FlowerService {
     @Transactional
     public Create createFlower(Long storeId, FlowerRequestDto.Create request, Long userId) {
 
-        // 가게 조회
-        Store store = storeRepository.findByIdAndDeletedFalse(storeId)
-            .orElseThrow(() -> new ApiException(STORE_NOT_FOUND));
-
-        // 본인 가게에서만 상품 등록 가능
-        if (!store.getUser().getId().equals(userId)) {
-            throw new ApiException(FLOWER_ACCESS_DENIED);
-        }
+        // 등록 권한 확인
+        Store store = checkStoreAuth(storeId, userId);
 
         // 상품 등록
         Flower flower = Flower.from(store, request);
@@ -55,7 +49,8 @@ public class FlowerServiceImpl implements FlowerService {
     public void updateFlower(Long storeId, Long flowerId, Update request, Long userId) {
 
         // 수정 권한 확인
-        Flower flower = checkFlowerAuth(userId, storeId, flowerId);
+        checkStoreAuth(storeId, userId);
+        Flower flower = checkFlowerAuth(storeId, flowerId);
 
         // 상품 수정
         flower.update(request);
@@ -86,14 +81,14 @@ public class FlowerServiceImpl implements FlowerService {
     public void deleteFlower(Long storeId, Long flowerId, Long userId) {
 
         // 삭제 권한 확인
-        Flower flower = checkFlowerAuth(userId, storeId, flowerId);
+        checkStoreAuth(storeId, userId);
+        Flower flower = checkFlowerAuth(storeId, flowerId);
 
         // soft delete 처리
         flower.setDeleted();
     }
 
-    @Transactional
-    public Flower checkFlowerAuth(Long userId, Long storeId, Long flowerId) {
+    private Store checkStoreAuth(Long storeId, Long userId) {
 
         // 가게 조회
         Store store = storeRepository.findByIdAndDeletedFalse(storeId)
@@ -103,6 +98,11 @@ public class FlowerServiceImpl implements FlowerService {
         if (!store.getUser().getId().equals(userId)) {
             throw new ApiException(FLOWER_ACCESS_DENIED);
         }
+
+        return store;
+    }
+
+    private Flower checkFlowerAuth(Long storeId, Long flowerId) {
 
         // 상품 조회
         Flower flower = flowerRepository.findByIdAndDeletedFalse(flowerId)
