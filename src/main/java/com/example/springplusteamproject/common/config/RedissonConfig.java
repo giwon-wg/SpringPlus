@@ -16,7 +16,7 @@ public class RedissonConfig {
 
         Dotenv dotenv = Dotenv.load();
 
-        String redisHost = dotenv.get("REDIS_HOST", "localhost");
+        String redisHost = dotenv.get("REDIS_HOST", "127.0.0.1");
         String redisPort = dotenv.get("REDIS_PORT", "6379");
 
         Config config = new Config();

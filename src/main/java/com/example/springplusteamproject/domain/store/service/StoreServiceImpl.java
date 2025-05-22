@@ -1,10 +1,11 @@
 package com.example.springplusteamproject.domain.store.service;
 
-
-import java.time.LocalTime;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -22,7 +23,7 @@ import com.example.springplusteamproject.domain.store.dto.response.StoreListResp
 import com.example.springplusteamproject.domain.store.dto.response.StoreResponseDto;
 import com.example.springplusteamproject.domain.store.entity.Store;
 import com.example.springplusteamproject.domain.store.repository.StoreRepository;
-import com.example.springplusteamproject.domain.user.entity.User;
+import com.example.springplusteamproject.domain.user.repository.UserRepository;
 import com.example.springplusteamproject.security.CustomUserPrincipal;
 
 import lombok.RequiredArgsConstructor;
@@ -34,41 +35,42 @@ import lombok.extern.slf4j.Slf4j;
 public class StoreServiceImpl implements StoreService {
 
     private final StoreRepository storeRepository;
+    private final RedissonClient redissonClient;
+    private final UserRepository userRepository;
+    private final StoreTransactionalService storeTransactionalService;
 
-    @Transactional
     @Override
     public StoreResponseDto createStore(StoreRequestDto dto, CustomUserPrincipal principal) {
 
-        if (storeRepository.existsByUserIdAndDeletedFalse(principal.getId())) {
-            log.warn("[Store - 가게 생성] 유저 Id 없음, userId: {}", principal.getId());
+        String storeName = dto.getName();
+        String lockKey = "store-lock:name:" + storeName;
+        log.info("lockKey = {}", lockKey);
+        RLock lock = redissonClient.getLock(lockKey);
+        boolean isLocked = false;
+
+        try {
+            isLocked = lock.tryLock(500, -1, TimeUnit.MILLISECONDS);
+
+            if (!isLocked) {
+                log.warn("[Store - 가게 생성] 락 획득 실패, storeName: {}", storeName);
+                throw new ApiException(ErrorStatus.STORE_BAD_REQUEST);
+            }
+
+            return storeTransactionalService.saveStore(dto, principal);
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.warn("[Store - 가게 생성] 락 인터럽트", e);
             throw new ApiException(ErrorStatus.STORE_BAD_REQUEST);
+        } finally {
+            if (lock.isHeldByCurrentThread()) {
+                try {
+                    lock.unlock();
+                } catch (Exception e) {
+                    log.error("[Store - 가게 생성] 락 해제 실패", e);
+                }
+            }
         }
-
-        if (ForbiddenWordUtil.containsForbiddenWord(dto.getName())) {
-            log.warn("[Store - 가게 생성] 가게 이름에 금지어 포함, storeName: {}", dto.getName());
-            throw new ApiException(ErrorStatus.STORE_BAD_REQUEST);
-        }
-
-        if (storeRepository.existsByNameAndDeletedFalse(dto.getName())) {
-            log.warn("[Store - 가게 생성] 가게 이름 중복, storeName: {}", dto.getName());
-            throw new ApiException(ErrorStatus.STORE_BAD_REQUEST);
-        }
-
-        Store store = Store.builder()
-            .name(dto.getName())
-            .address(dto.getAddress())
-            .image(dto.getImage())
-            .phoneNumber(dto.getPhoneNumber())
-            .minOrderPrice(dto.getMinOrderPrice())
-            .openTime(LocalTime.parse(dto.getOpenTime()))
-            .closeTime(LocalTime.parse(dto.getCloseTime()))
-            .deleted(false)
-            .user(User.builder().id(principal.getId()).build())
-            .build();
-
-        Store saved = storeRepository.save(store);
-        log.info("[Store - 가게 생성] 가게 생성 성공, userId={} storeId={}", principal.getId(), saved.getId());
-        return toResponseDto(saved);
     }
 
     @Transactional
@@ -122,6 +124,7 @@ public class StoreServiceImpl implements StoreService {
         boolean hasForbidden = ForbiddenWordUtil.containsForbiddenWord(name);
         long afterForbidden = System.nanoTime();
 
+        // todo 완료시 삭제 필요
         System.out.printf("중복이름 조회: %.2fms, 금지어 확인: %.2fms%n",
             (afterExists - start) / 1_000_000.0,
             (afterForbidden - afterExists) / 1_000_000.0
