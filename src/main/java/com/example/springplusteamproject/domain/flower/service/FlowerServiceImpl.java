@@ -88,7 +88,7 @@ public class FlowerServiceImpl implements FlowerService {
         flower.setDeleted();
     }
 
-    public Store checkStoreAuth(Long storeId, Long userId) {
+    private Store checkStoreAuth(Long storeId, Long userId) {
 
         // 가게 조회
         Store store = storeRepository.findByIdAndDeletedFalse(storeId)
@@ -102,7 +102,7 @@ public class FlowerServiceImpl implements FlowerService {
         return store;
     }
 
-    public Flower checkFlowerAuth(Long storeId, Long flowerId) {
+    private Flower checkFlowerAuth(Long storeId, Long flowerId) {
 
         // 상품 조회
         Flower flower = flowerRepository.findByIdAndDeletedFalse(flowerId)
