@@ -39,7 +39,7 @@ public class StoreServiceImpl implements StoreService {
     private final RedissonClient redissonClient;
     private final UserRepository userRepository;
     private final StoreTransactionalService storeTransactionalService;
-    private final RedisTemplate<String, Long> redisTemplate;
+    private final RedisTemplate<String, Long> longRedisTemplate;
 
     @Override
     public StoreResponseDto createStore(StoreRequestDto dto, CustomUserPrincipal principal) {
@@ -153,6 +153,6 @@ public class StoreServiceImpl implements StoreService {
 
     private void increaseViewCount(Long storeId) {
         String key = "store:viewcount:" + storeId;
-        redisTemplate.opsForValue().increment(key);
+        longRedisTemplate.opsForValue().increment(key);
     }
 }

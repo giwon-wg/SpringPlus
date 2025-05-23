@@ -8,4 +8,5 @@ public interface PopularStoreService {
 
     List<StoreResponseDto> getPopularStoresByView();
 
+    List<StoreResponseDto> getPopularStoresFromCache();
 }
