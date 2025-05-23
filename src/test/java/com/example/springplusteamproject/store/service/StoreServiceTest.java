@@ -5,6 +5,10 @@ import static org.mockito.BDDMockito.*;
 
 import static org.mockito.Mockito.*;
 
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.data.domain.Pageable;
 import java.time.LocalTime;
 import java.util.List;
@@ -16,6 +20,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.PageRequest;
 
+import com.example.springplusteamproject.common.config.RedissonConfig;
 import com.example.springplusteamproject.common.exception.ApiException;
 import com.example.springplusteamproject.common.request.CursorPageRequest;
 import com.example.springplusteamproject.common.response.CursorPageResponse;
@@ -27,15 +32,31 @@ import com.example.springplusteamproject.domain.store.dto.response.StoreResponse
 import com.example.springplusteamproject.domain.store.entity.Store;
 import com.example.springplusteamproject.domain.store.repository.StoreRepository;
 import com.example.springplusteamproject.domain.store.service.StoreServiceImpl;
+import com.example.springplusteamproject.domain.store.service.StoreTransactionalService;
 import com.example.springplusteamproject.domain.user.entity.User;
+import com.example.springplusteamproject.domain.user.entity.UserRole;
+import com.example.springplusteamproject.domain.user.repository.UserRepository;
+import com.example.springplusteamproject.domain.user.service.UserService;
 import com.example.springplusteamproject.security.CustomUserPrincipal;
 import static org.assertj.core.api.Assertions.assertThat;
 
-
+@ExtendWith(MockitoExtension.class)
 class StoreServiceTest {
 
     @Mock
     private StoreRepository storeRepository;
+
+    @Mock
+    private RedissonClient redissonClient;
+
+    @Mock
+    private UserService userService;
+
+    @Mock
+    private UserRepository userRepository;
+
+    @Mock
+    private StoreTransactionalService storeTransactionalService;
 
     private StoreServiceImpl storeService;
 
@@ -43,24 +64,42 @@ class StoreServiceTest {
 
     private User user;
 
-    @BeforeEach
-    void SetUp() {
-        MockitoAnnotations.openMocks(this);
-        storeService = new StoreServiceImpl(storeRepository);
-
-        user = User.builder()
+    private final CustomUserPrincipal principal = new CustomUserPrincipal(
+        User.builder()
             .id(1L)
+            .email("test@example.com")
+            .userRole(UserRole.CUSTOMER)
+            .isDeleted(false)
+            .build()
+    );
+
+    @BeforeEach
+    void setUp() {
+        storeService = new StoreServiceImpl(storeRepository, redissonClient, userRepository, storeTransactionalService);
+
+        user = createTestUser();
+        store = createTestStore(user);
+    }
+
+    private User createTestUser() {
+        return User.builder()
+            .id(1L)
+            .email("test@example.com")
+            .userRole(UserRole.CUSTOMER)
+            .nickname("테스트유저")
             .address("서울특별시")
             .brn("테스트")
-            .email("email@test.com")
             .image("이미지")
-            .nickname("다람지")
+            .isDeleted(false)
             .build();
+    }
 
-        store = Store.builder()
+    private Store createTestStore(User user) {
+        return Store.builder()
             .id(1L)
             .name("안개꽃 화원")
             .address("대구 광역시")
+            .image("이미지")
             .phoneNumber("010-1234-5678")
             .minOrderPrice(15000L)
             .openTime(LocalTime.of(9, 0))
@@ -70,121 +109,64 @@ class StoreServiceTest {
             .build();
     }
 
-    @Test
-    void 가게_생성_성공(){
-        // given
-        StoreRequestDto dto = new StoreRequestDto(
-            "장미 화원",
-            "대구 광역시",
-            "이미지",
-            "010-1234-5678",
-            15000L,
-            "09:00",
-            "18:00"
-        );
-        when(storeRepository.existsByUserIdAndDeletedFalse(user.getId()))
-            .thenReturn(false);
-        when(storeRepository.existsByNameAndDeletedFalse(dto.getName()))
-            .thenReturn(false);
-
-
-        Store store = Store.builder()
-            .name(dto.getName())
-            .address(dto.getAddress())
-            .image(dto.getImage())
-            .phoneNumber(dto.getPhoneNumber())
-            .minOrderPrice(dto.getMinOrderPrice())
-            .openTime(LocalTime.parse(dto.getOpenTime()))
-            .closeTime(LocalTime.parse(dto.getCloseTime()))
-            .deleted(false)
-            .user(user)
-            .build();
-
-        when(storeRepository.save(any(Store.class))).thenReturn(store);
-
-        // when
-        CustomUserPrincipal principal = new CustomUserPrincipal(user);
-        StoreResponseDto response = storeService.createStore(dto, principal);
-
-        // then
-        assertThat(response.getName()).isEqualTo("장미 화원");
-        assertThat(response.getAddress()).isEqualTo("대구 광역시");
-        assertThat(response.getImage()).isEqualTo("이미지");
-        assertThat(response.getPhoneNumber()).isEqualTo("010-1234-5678");
-        assertThat(response.getMinOrderPrice()).isEqualTo(15000L);
-        assertThat(response.getOpenTime()).isEqualTo("09:00");
-        assertThat(response.getCloseTime()).isEqualTo("18:00");
+    private CustomUserPrincipal createPrincipal(User user) {
+        return new CustomUserPrincipal(user);
     }
 
     @Test
-    void 가게_생성_금지어_예외() {
+    void 가게_생성_락_획득실패_예외() throws InterruptedException {
         // given
-        StoreRequestDto dto = new StoreRequestDto(
-            "운영자 카페",
-            "서울시 강남구",
-            "image.png",
-            "010-1234-5678",
-            10000L,
-            "09:00",
-            "21:00"
-        );
+        StoreRequestDto dto = new StoreRequestDto("중복", "서울", "...", "...", 10000L, "09:00", "18:00");
 
-        CustomUserPrincipal principal = new CustomUserPrincipal(user);
-
-        when(storeRepository.existsByUserIdAndDeletedFalse(principal.getId())).thenReturn(false);
-        when(storeRepository.existsByNameAndDeletedFalse(dto.getName())).thenReturn(false);
+        RLock mockLock = mock(RLock.class);
+        when(redissonClient.getLock(anyString())).thenReturn(mockLock);
+        when(mockLock.tryLock(anyLong(), anyLong(), any())).thenReturn(false); // 락 획득 실패
 
         // when & then
-        ApiException exception = assertThrows(ApiException.class, () ->
+        ApiException ex = assertThrows(ApiException.class, () ->
             storeService.createStore(dto, principal)
         );
 
-        assertEquals(ErrorStatus.STORE_BAD_REQUEST, exception.getErrorCode());
+        assertEquals(ErrorStatus.STORE_BAD_REQUEST, ex.getErrorCode());
     }
 
     @Test
-    void 가게_생성_이름중복_예외() {
+    void 가게_생성_락해제_예외_발생해도_정상종료() throws InterruptedException {
         // given
-        StoreRequestDto dto = new StoreRequestDto(
-            "안개꽃 화원",
-            "대구 광역시",
-            "이미지",
-            "010-1234-5678",
-            15000L,
-            "09:00",
-            "18:00"
+        StoreRequestDto dto = new StoreRequestDto("장미 카페", "서울", "img", "010", 10000L, "09:00", "18:00");
+        CustomUserPrincipal principal = new CustomUserPrincipal(
+            User.builder().id(1L).email("test@example.com").userRole(UserRole.CUSTOMER).isDeleted(false).build()
         );
-        when(storeRepository.existsByNameAndDeletedFalse(dto.getName())).thenReturn(true);
 
-        CustomUserPrincipal principal = new CustomUserPrincipal(user);
+        RLock mockLock = mock(RLock.class);
+        when(redissonClient.getLock(anyString())).thenReturn(mockLock);
+        when(mockLock.tryLock(anyLong(), anyLong(), any())).thenReturn(true);
+        when(storeTransactionalService.saveStore(any(), any())).thenReturn(mock(StoreResponseDto.class));
+        when(mockLock.isHeldByCurrentThread()).thenReturn(true);
+        doThrow(new RuntimeException("unlock error")).when(mockLock).unlock();
 
-        // when & then
-        assertThrows(ApiException.class, () -> storeService.createStore(dto, principal));
+        // when
+        StoreResponseDto response = storeService.createStore(dto, principal);
+
+        // then
+        assertNotNull(response);
     }
 
     @Test
-    void 가게_생성_가게_보유_예외() {
+    void 가게_생성_인터럽트_예외() throws InterruptedException {
         // given
-        StoreRequestDto dto = new StoreRequestDto(
-            "튤립 화원",
-            "부산광역시",
-            "이미지",
-            "010-5555-5555",
-            20000L,
-            "10:00",
-            "19:00"
-        );
+        StoreRequestDto dto = new StoreRequestDto("중복", "서울", "...", "...", 10000L, "09:00", "18:00");
 
-        when(storeRepository.existsByNameAndDeletedFalse(dto.getName()))
-            .thenReturn(false);
-
-        when(storeRepository.existsByUserIdAndDeletedFalse(user.getId()))
-            .thenReturn(true);
-
-        CustomUserPrincipal principal = new CustomUserPrincipal(user);
+        RLock mockLock = mock(RLock.class);
+        when(redissonClient.getLock(anyString())).thenReturn(mockLock);
+        when(mockLock.tryLock(anyLong(), anyLong(), any())).thenThrow(new InterruptedException());
 
         // when & then
-        assertThrows(ApiException.class, () -> storeService.createStore(dto, principal));
+        ApiException ex = assertThrows(ApiException.class, () ->
+            storeService.createStore(dto, principal)
+        );
+
+        assertEquals(ErrorStatus.STORE_BAD_REQUEST, ex.getErrorCode());
     }
 
     @Test
