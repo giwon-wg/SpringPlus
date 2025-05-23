@@ -128,6 +128,22 @@ public class FlowerController {
     }
 
     @Operation(
+        summary = "꽃 상품 검색 V2",
+        description = "인기 검색 top10 캐싱이 적용된 상품 검색 기능을 이용할 수 있습니다.",
+        security = {@SecurityRequirement(name = "bearerAuth")}
+    )
+    @GetMapping("/flowers/search/v2")
+    public ResponseEntity<ApiResponse<Page<FlowerResponseDto.Get>>> searchFlowersV2(
+        @RequestParam String keyword,
+        @AuthenticationPrincipal CustomUserPrincipal principal,
+        @RequestParam(defaultValue = "1") int page,
+        @RequestParam(defaultValue = "10") int size
+    ) {
+        return ApiResponse.onSuccess(FLOWER_OPERATION_SUCCESS,
+            flowerService.searchFlowers(keyword, principal.getId(), page, size));
+    }
+
+    @Operation(
         summary = "꽃 상품 인기 검색어 조회",
         description = "일간/월간/연간 인기 검색어를 조회할 수 있습니다.",
         security = {@SecurityRequirement(name = "bearerAuth")}

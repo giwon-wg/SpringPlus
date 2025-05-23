@@ -28,6 +28,9 @@ public interface FlowerService {
     // 상품 검색
     Page<FlowerResponseDto.Get> searchFlowers(String keyword, Long userId, int page, int size);
 
+    // 상품 검색 - 캐싱 적용
+    Page<Get> searchFlowersV2(String keyword, Long userId, int page, int size);
+
     // 인기 검색어 조회
     List<FlowerSearchResponseDto> getTop10Keywords(Integer year, Integer month, Integer day);
 
