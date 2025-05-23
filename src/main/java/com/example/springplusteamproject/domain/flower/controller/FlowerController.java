@@ -6,14 +6,17 @@ import static com.example.springplusteamproject.common.status.SuccessStatus.FLOW
 import com.example.springplusteamproject.common.response.ApiResponse;
 import com.example.springplusteamproject.domain.flower.dto.request.FlowerRequestDto;
 import com.example.springplusteamproject.domain.flower.dto.response.FlowerResponseDto;
+import com.example.springplusteamproject.domain.flower.dto.response.FlowerSearchResponseDto;
 import com.example.springplusteamproject.domain.flower.service.FlowerService;
 import com.example.springplusteamproject.security.CustomUserPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -104,6 +107,38 @@ public class FlowerController {
         @AuthenticationPrincipal CustomUserPrincipal principal
     ) {
         flowerService.deleteFlower(storeId, flowerId, principal.getId());
+        System.out.println("테스트");
         return ApiResponse.onSuccess(FLOWER_OPERATION_SUCCESS, null);
+    }
+
+    @Operation(
+        summary = "꽃 상품 검색",
+        description = "꽃 이름을 기준으로 검색할 수 있습니다.",
+        security = {@SecurityRequirement(name = "bearerAuth")}
+    )
+    @GetMapping("/flowers/search")
+    public ResponseEntity<ApiResponse<Page<FlowerResponseDto.Get>>> searchFlowers(
+        @RequestParam String keyword,
+        @AuthenticationPrincipal CustomUserPrincipal principal,
+        @RequestParam(defaultValue = "1") int page,
+        @RequestParam(defaultValue = "10") int size
+    ) {
+        return ApiResponse.onSuccess(FLOWER_OPERATION_SUCCESS,
+            flowerService.searchFlowers(keyword, principal.getId(), page, size));
+    }
+
+    @Operation(
+        summary = "꽃 상품 인기 검색어 조회",
+        description = "일간/월간/연간 인기 검색어를 조회할 수 있습니다.",
+        security = {@SecurityRequirement(name = "bearerAuth")}
+    )
+    @GetMapping("/flowers/search/top10")
+    public ResponseEntity<ApiResponse<List<FlowerSearchResponseDto>>> getTop10Keywords(
+        @RequestParam(required = false) Integer year,
+        @RequestParam(required = false) Integer month,
+        @RequestParam(required = false) Integer day
+    ) {
+        return ApiResponse.onSuccess(FLOWER_OPERATION_SUCCESS,
+            flowerService.getTop10Keywords(year, month, day));
     }
 }

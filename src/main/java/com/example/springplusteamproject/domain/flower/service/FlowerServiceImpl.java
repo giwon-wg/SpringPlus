@@ -10,10 +10,16 @@ import com.example.springplusteamproject.domain.flower.dto.request.FlowerRequest
 import com.example.springplusteamproject.domain.flower.dto.response.FlowerResponseDto;
 import com.example.springplusteamproject.domain.flower.dto.response.FlowerResponseDto.Create;
 import com.example.springplusteamproject.domain.flower.dto.response.FlowerResponseDto.Get;
+import com.example.springplusteamproject.domain.flower.dto.response.FlowerSearchResponseDto;
 import com.example.springplusteamproject.domain.flower.entity.Flower;
+import com.example.springplusteamproject.domain.flower.entity.FlowerSearchLog;
+import com.example.springplusteamproject.domain.flower.enums.SearchType;
 import com.example.springplusteamproject.domain.flower.repository.FlowerRepository;
+import com.example.springplusteamproject.domain.flower.repository.FlowerSearchLogRepository;
 import com.example.springplusteamproject.domain.store.entity.Store;
 import com.example.springplusteamproject.domain.store.repository.StoreRepository;
+import java.time.LocalDate;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -29,6 +35,7 @@ public class FlowerServiceImpl implements FlowerService {
 
     private final StoreRepository storeRepository;
     private final FlowerRepository flowerRepository;
+    private final FlowerSearchLogRepository flowerSearchLogRepository;
 
     @Override
     @Transactional
@@ -86,6 +93,26 @@ public class FlowerServiceImpl implements FlowerService {
 
         // soft delete 처리
         flower.setDeleted();
+    }
+
+    @Override
+    @Transactional
+    public Page<Get> searchFlowers(String keyword, Long userId, int page, int size) {
+
+        Pageable pageable = PageRequest.of(page - 1, size);
+        Page<Flower> flowers = flowerRepository.findByNameContainingAndDeletedFalse(keyword, pageable);
+
+        // 검색 키워드 저장
+        FlowerSearchLog log = new FlowerSearchLog(userId, keyword);
+        flowerSearchLogRepository.save(log);
+
+        return flowers.map(FlowerResponseDto.Get::toDto);
+    }
+
+    @Override
+    public List<FlowerSearchResponseDto> getTop10Keywords(Integer year, Integer month, Integer day) {
+
+        return flowerSearchLogRepository.getTop10Keywords(year, month, day);
     }
 
     private Store checkStoreAuth(Long storeId, Long userId) {
