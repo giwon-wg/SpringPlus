@@ -117,4 +117,5 @@ public class StoreController {
     public ResponseEntity<ApiResponse<List<StoreResponseDto>>> getPopularStores() {
         return ApiResponse.onSuccess(SuccessStatus.STORE_SUCCESS, popularStoreService.getPopularStoresFromCache());
     }
+
 }
