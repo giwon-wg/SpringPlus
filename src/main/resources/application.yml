@@ -5,30 +5,25 @@ server:
 spring:
   application:
     name: SpringPlusTeamProject
-
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
-
   jackson:
 #    property-naming-strategy: SNAKE_CASE
-
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: ${MYSQL_URL}
     username: ${MYSQL_USERNAME}
     password: ${MYSQL_PASSWORD}
-
   jpa:
     hibernate:
       ddl-auto: update
     properties:
       hibernate:
-        show_sql: true
+        show_sql: false
         format_sql: true
       use_sql_comments: true
     open-in-view: false
-
   jwt:
     token:
       access:
@@ -36,7 +31,6 @@ spring:
       refresh:
         minute: 20160
     secret: ${SECRET_KEY}
-
   data:
     redis:
       host: ${REDIS_HOST}
@@ -56,3 +50,8 @@ cache:
     values:
       friends:
         minutes: 15
+
+logging:
+    level:
+        org.hibernate.SQL: off
+        org.hibernate.type.descriptor.sql.BasicBinder: off
