@@ -13,9 +13,12 @@ import com.example.springplusteamproject.domain.user.entity.User;
 import com.example.springplusteamproject.domain.user.repository.UserRepository;
 import com.example.springplusteamproject.security.CustomUserPrincipal;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,10 +28,12 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UserCouponServiceImpl implements UserCouponService {
 
+    private final UserCouponTransactionalService userCouponTransactionalService;
     private final DiscountCouponRepository discountCouponRepository;
     private final UserCouponRepository userCouponRepository;
     private final StoreRepository storeRepository;
     private final UserRepository userRepository;
+    private final RedissonClient redissonClient;
 
     @Override
     @Transactional(readOnly = true)
@@ -69,20 +74,38 @@ public class UserCouponServiceImpl implements UserCouponService {
     }
 
     @Override
-    @Transactional
     public UserCouponIssueResponseDto issueUserCoupon(Long storeId, Long couponId, CustomUserPrincipal principal) {
 
         User user = validateActivateUser(principal.getUsername());
-        validateCouponNotIssued(user.getId(), couponId);
+        Long discountCouponId = discountCouponRepository.findById(couponId)
+            .orElseThrow(() -> new ApiException(ErrorStatus.COUPON_NOT_FOUND)).getId();
+        String lockKey = "coupon-lock:id: " + discountCouponId;
+        log.info("lockKey = {}", lockKey);
+        RLock lock = redissonClient.getLock(lockKey);
+        boolean isLocked;
 
-        validateActivateStore(storeId);
-        DiscountCoupon issuableCoupon = validateIssuableCoupon(storeId, couponId);
+        try {
+            isLocked = lock.tryLock(3000, 3000, TimeUnit.MILLISECONDS);
 
-        UserCoupon issueCoupon = createUserCoupon(user, issuableCoupon);
-        UserCoupon savedCoupon = userCouponRepository.save(issueCoupon);
-        issuableCoupon.decreaseStock();
+            if (!isLocked) {
+                log.warn("[Coupon - 쿠폰 발급] 락 획득 실패, couponId: {}", discountCouponId);
+                throw new ApiException(ErrorStatus.COUPON_BAD_REQUEST);
+            }
 
-        return UserCouponIssueResponseDto.from(issuableCoupon, savedCoupon);
+            return userCouponTransactionalService.issueUserCoupon(storeId, couponId, user);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.warn("[Coupon - 쿠폰 발급] 락 인터럽트", e);
+            throw new ApiException(ErrorStatus.STORE_BAD_REQUEST);
+        } finally {
+            if (lock.isHeldByCurrentThread()) {
+                try {
+                    lock.unlock();
+                } catch (Exception e) {
+                    log.error("[Coupon - 쿠폰 발급] 락 해제 실패", e);
+                }
+            }
+        }
     }
 
     @Override
@@ -117,7 +140,8 @@ public class UserCouponServiceImpl implements UserCouponService {
 
     private void validateActivateStore(Long storeId) {
 
-        storeRepository.findByIdAndDeletedFalse(storeId).orElseThrow(() -> new ApiException(ErrorStatus.STORE_NOT_FOUND));
+        storeRepository.findByIdAndDeletedFalse(storeId)
+            .orElseThrow(() -> new ApiException(ErrorStatus.STORE_NOT_FOUND));
     }
 
     private void validateCouponNotIssued(Long userId, Long couponId) {
