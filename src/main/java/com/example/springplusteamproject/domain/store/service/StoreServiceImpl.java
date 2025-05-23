@@ -77,7 +77,7 @@ public class StoreServiceImpl implements StoreService {
     @Override
     public void deleteStore(CustomUserPrincipal principal) {
 
-        Store store = storeRepository.findByUserIdAndDeletedFalse(principal.getId())
+        Store store = storeRepository.findByUserIdAndDeletedFalseForUpdate(principal.getId())
             .orElseThrow(() -> {
                 log.warn("[Store - 가게 폐업] userId에 해당하는 가게 없음, userId: {}", principal.getId());
                 return new ApiException(ErrorStatus.STORE_NOT_FOUND);
@@ -116,19 +116,9 @@ public class StoreServiceImpl implements StoreService {
 
         String name = dto.getName();
 
-        long start = System.nanoTime();
-
         boolean exists = storeRepository.existsByNameAndDeletedFalse(name);
-        long afterExists = System.nanoTime();
 
         boolean hasForbidden = ForbiddenWordUtil.containsForbiddenWord(name);
-        long afterForbidden = System.nanoTime();
-
-        // todo 완료시 삭제 필요
-        System.out.printf("중복이름 조회: %.2fms, 금지어 확인: %.2fms%n",
-            (afterExists - start) / 1_000_000.0,
-            (afterForbidden - afterExists) / 1_000_000.0
-        );
 
         if (exists) {
             log.warn("[Store - 이름 확인] 가게 이름에 금지어 포함, storeName: {}", dto.getName());
