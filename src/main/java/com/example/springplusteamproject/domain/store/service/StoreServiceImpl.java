@@ -8,6 +8,7 @@ import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,6 +39,7 @@ public class StoreServiceImpl implements StoreService {
     private final RedissonClient redissonClient;
     private final UserRepository userRepository;
     private final StoreTransactionalService storeTransactionalService;
+    private final RedisTemplate<Object, Object> redisTemplate;
 
     @Override
     public StoreResponseDto createStore(StoreRequestDto dto, CustomUserPrincipal principal) {
@@ -93,21 +95,21 @@ public class StoreServiceImpl implements StoreService {
     public List<StoreListResponseDto> getAllStores() {
         log.info("[Store - 가게 전체 조회] 가게 전체 조회 성공");
         return storeRepository.findByDeletedFalse().stream()
-            .map(this::toListResponseDto)
+            .map(StoreListResponseDto::fromEntity)
             .collect(Collectors.toList());
     }
 
     @Transactional(readOnly=true)
     @Override
     public StoreResponseDto getStoreById(Long id) {
-
+        increaseViewCount(id);
         Store store = storeRepository.findByIdAndDeletedFalse(id)
             .orElseThrow(() -> {
                 log.warn("[Store - ID 기반 조회] Id에 해당하는 가게 없음, storeId: {}", id);
                 return new ApiException(ErrorStatus.STORE_NOT_FOUND);
             });
         log.info("[Store - 가게 단건 조회] 가게 단건 조회 성공, storeId: {}", id);
-        return toResponseDto(store);
+        return StoreResponseDto.fromEntity(store);
     }
 
     @Transactional(readOnly=true)
@@ -148,27 +150,8 @@ public class StoreServiceImpl implements StoreService {
         return CursorPaginationUtil.paginate(dtoList, cursorPageRequest.getSize(), StoreListResponseDto::getId);
     }
 
-    private StoreResponseDto toResponseDto(Store store) {
-        return StoreResponseDto.builder()
-            .id(store.getId())
-            .name(store.getName())
-            .address(store.getAddress())
-            .phoneNumber(store.getPhoneNumber())
-            .image(store.getImage())
-            .minOrderPrice(store.getMinOrderPrice())
-            .openTime(store.getOpenTime())
-            .closeTime(store.getCloseTime())
-            .build();
-    }
-
-    private StoreListResponseDto toListResponseDto(Store store) {
-        return StoreListResponseDto.builder()
-            .id(store.getId())
-            .name(store.getName())
-            .image(store.getImage())
-            .minOrderPrice(store.getMinOrderPrice())
-            .openTime(store.getOpenTime())
-            .closeTime(store.getCloseTime())
-            .build();
+    private void increaseViewCount(Long storeId) {
+        String key = "store:viewcount:" + storeId;
+        redisTemplate.opsForValue().increment(key);
     }
 }
