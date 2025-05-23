@@ -102,7 +102,7 @@ public class StoreServiceImpl implements StoreService {
     @Transactional(readOnly=true)
     @Override
     public StoreResponseDto getStoreById(Long id) {
-
+        increaseViewCount(id);
         Store store = storeRepository.findByIdAndDeletedFalse(id)
             .orElseThrow(() -> {
                 log.warn("[Store - ID 기반 조회] Id에 해당하는 가게 없음, storeId: {}", id);
