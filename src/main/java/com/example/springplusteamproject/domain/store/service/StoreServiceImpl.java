@@ -1,12 +1,14 @@
 package com.example.springplusteamproject.domain.store.service;
 
-
-import java.time.LocalTime;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +24,7 @@ import com.example.springplusteamproject.domain.store.dto.response.StoreListResp
 import com.example.springplusteamproject.domain.store.dto.response.StoreResponseDto;
 import com.example.springplusteamproject.domain.store.entity.Store;
 import com.example.springplusteamproject.domain.store.repository.StoreRepository;
-import com.example.springplusteamproject.domain.user.entity.User;
+import com.example.springplusteamproject.domain.user.repository.UserRepository;
 import com.example.springplusteamproject.security.CustomUserPrincipal;
 
 import lombok.RequiredArgsConstructor;
@@ -34,48 +36,50 @@ import lombok.extern.slf4j.Slf4j;
 public class StoreServiceImpl implements StoreService {
 
     private final StoreRepository storeRepository;
+    private final RedissonClient redissonClient;
+    private final UserRepository userRepository;
+    private final StoreTransactionalService storeTransactionalService;
+    private final RedisTemplate<String, Long> longRedisTemplate;
 
-    @Transactional
     @Override
     public StoreResponseDto createStore(StoreRequestDto dto, CustomUserPrincipal principal) {
 
-        if (storeRepository.existsByUserIdAndDeletedFalse(principal.getId())) {
-            log.warn("[Store - 가게 생성] 유저 Id 없음, userId: {}", principal.getId());
+        String storeName = dto.getName();
+        String lockKey = "store-lock:name:" + storeName;
+        log.info("lockKey = {}", lockKey);
+        RLock lock = redissonClient.getLock(lockKey);
+        boolean isLocked = false;
+
+        try {
+            isLocked = lock.tryLock(500, -1, TimeUnit.MILLISECONDS);
+
+            if (!isLocked) {
+                log.warn("[Store - 가게 생성] 락 획득 실패, storeName: {}", storeName);
+                throw new ApiException(ErrorStatus.STORE_BAD_REQUEST);
+            }
+
+            return storeTransactionalService.saveStore(dto, principal);
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.warn("[Store - 가게 생성] 락 인터럽트", e);
             throw new ApiException(ErrorStatus.STORE_BAD_REQUEST);
+        } finally {
+            if (lock.isHeldByCurrentThread()) {
+                try {
+                    lock.unlock();
+                } catch (Exception e) {
+                    log.error("[Store - 가게 생성] 락 해제 실패", e);
+                }
+            }
         }
-
-        if (ForbiddenWordUtil.containsForbiddenWord(dto.getName())) {
-            log.warn("[Store - 가게 생성] 가게 이름에 금지어 포함, storeName: {}", dto.getName());
-            throw new ApiException(ErrorStatus.STORE_BAD_REQUEST);
-        }
-
-        if (storeRepository.existsByNameAndDeletedFalse(dto.getName())) {
-            log.warn("[Store - 가게 생성] 가게 이름 중복, storeName: {}", dto.getName());
-            throw new ApiException(ErrorStatus.STORE_BAD_REQUEST);
-        }
-
-        Store store = Store.builder()
-            .name(dto.getName())
-            .address(dto.getAddress())
-            .image(dto.getImage())
-            .phoneNumber(dto.getPhoneNumber())
-            .minOrderPrice(dto.getMinOrderPrice())
-            .openTime(LocalTime.parse(dto.getOpenTime()))
-            .closeTime(LocalTime.parse(dto.getCloseTime()))
-            .deleted(false)
-            .user(User.builder().id(principal.getId()).build())
-            .build();
-
-        Store saved = storeRepository.save(store);
-        log.info("[Store - 가게 생성] 가게 생성 성공, userId={} storeId={}", principal.getId(), saved.getId());
-        return toResponseDto(saved);
     }
 
     @Transactional
     @Override
     public void deleteStore(CustomUserPrincipal principal) {
 
-        Store store = storeRepository.findByUserIdAndDeletedFalse(principal.getId())
+        Store store = storeRepository.findByUserIdAndDeletedFalseForUpdate(principal.getId())
             .orElseThrow(() -> {
                 log.warn("[Store - 가게 폐업] userId에 해당하는 가게 없음, userId: {}", principal.getId());
                 return new ApiException(ErrorStatus.STORE_NOT_FOUND);
@@ -91,21 +95,22 @@ public class StoreServiceImpl implements StoreService {
     public List<StoreListResponseDto> getAllStores() {
         log.info("[Store - 가게 전체 조회] 가게 전체 조회 성공");
         return storeRepository.findByDeletedFalse().stream()
-            .map(this::toListResponseDto)
+            .map(StoreListResponseDto::fromEntity)
             .collect(Collectors.toList());
     }
 
     @Transactional(readOnly=true)
     @Override
     public StoreResponseDto getStoreById(Long id) {
-
+        increaseViewCount(id);
         Store store = storeRepository.findByIdAndDeletedFalse(id)
             .orElseThrow(() -> {
                 log.warn("[Store - ID 기반 조회] Id에 해당하는 가게 없음, storeId: {}", id);
                 return new ApiException(ErrorStatus.STORE_NOT_FOUND);
             });
+        increaseViewCount(id);
         log.info("[Store - 가게 단건 조회] 가게 단건 조회 성공, storeId: {}", id);
-        return toResponseDto(store);
+        return StoreResponseDto.fromEntity(store);
     }
 
     @Transactional(readOnly=true)
@@ -114,18 +119,9 @@ public class StoreServiceImpl implements StoreService {
 
         String name = dto.getName();
 
-        long start = System.nanoTime();
-
         boolean exists = storeRepository.existsByNameAndDeletedFalse(name);
-        long afterExists = System.nanoTime();
 
         boolean hasForbidden = ForbiddenWordUtil.containsForbiddenWord(name);
-        long afterForbidden = System.nanoTime();
-
-        System.out.printf("중복이름 조회: %.2fms, 금지어 확인: %.2fms%n",
-            (afterExists - start) / 1_000_000.0,
-            (afterForbidden - afterExists) / 1_000_000.0
-        );
 
         if (exists) {
             log.warn("[Store - 이름 확인] 가게 이름에 금지어 포함, storeName: {}", dto.getName());
@@ -155,27 +151,8 @@ public class StoreServiceImpl implements StoreService {
         return CursorPaginationUtil.paginate(dtoList, cursorPageRequest.getSize(), StoreListResponseDto::getId);
     }
 
-    private StoreResponseDto toResponseDto(Store store) {
-        return StoreResponseDto.builder()
-            .id(store.getId())
-            .name(store.getName())
-            .address(store.getAddress())
-            .phoneNumber(store.getPhoneNumber())
-            .image(store.getImage())
-            .minOrderPrice(store.getMinOrderPrice())
-            .openTime(store.getOpenTime())
-            .closeTime(store.getCloseTime())
-            .build();
-    }
-
-    private StoreListResponseDto toListResponseDto(Store store) {
-        return StoreListResponseDto.builder()
-            .id(store.getId())
-            .name(store.getName())
-            .image(store.getImage())
-            .minOrderPrice(store.getMinOrderPrice())
-            .openTime(store.getOpenTime())
-            .closeTime(store.getCloseTime())
-            .build();
+    private void increaseViewCount(Long storeId) {
+        String key = "store:viewcount:" + storeId;
+        longRedisTemplate.opsForValue().increment(key);
     }
 }

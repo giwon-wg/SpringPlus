@@ -64,6 +64,9 @@ dependencies {
     // test
     testImplementation 'org.assertj:assertj-core:3.24.2'
 
+    // redisson
+    implementation 'org.redisson:redisson-spring-boot-starter:3.23.4'
+
     // querydsl
     implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
     annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"

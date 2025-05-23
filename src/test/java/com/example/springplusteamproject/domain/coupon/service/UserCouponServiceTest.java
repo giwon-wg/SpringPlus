@@ -3,6 +3,8 @@ package com.example.springplusteamproject.domain.coupon.service;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -23,12 +25,15 @@ import com.example.springplusteamproject.domain.user.repository.UserRepository;
 import com.example.springplusteamproject.security.CustomUserPrincipal;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 
 @ExtendWith(MockitoExtension.class)
 class UserCouponServiceTest {
@@ -45,8 +50,14 @@ class UserCouponServiceTest {
     @Mock
     private UserRepository userRepository;
 
-    @InjectMocks
+    @Mock
+    private RedissonClient redissonClient;
+
+    @Mock
+    private RLock rLock;
+
     private UserCouponServiceImpl userCouponService;
+    private UserCouponTransactionalService userCouponTransactionalService;
 
     private DiscountCoupon issuedDiscountCoupon;
     private DiscountCoupon discountCoupon;
@@ -87,6 +98,16 @@ class UserCouponServiceTest {
             .user(user)
             .build();
         principal = new CustomUserPrincipal(user);
+        userCouponTransactionalService = new UserCouponTransactionalService(storeRepository, userCouponRepository, discountCouponRepository);
+
+        userCouponService = new UserCouponServiceImpl(
+            userCouponTransactionalService,
+            discountCouponRepository,
+            userCouponRepository,
+            storeRepository,
+            userRepository,
+            redissonClient
+        );
     }
 
     @Test
@@ -140,10 +161,12 @@ class UserCouponServiceTest {
     }
 
     @Test
-    void 쿠폰_발급에_성공한다() {
-
+    void 쿠폰_발급에_성공한다() throws InterruptedException {
         Long couponId = 1L;
 
+        given(redissonClient.getLock(anyString())).willReturn(rLock);
+        given(rLock.tryLock(anyLong(), anyLong(), any(TimeUnit.class))).willReturn(true);
+        given(discountCouponRepository.findById(couponId)).willReturn(Optional.of(discountCoupon));
         given(userRepository.findByEmail(principal.getUsername())).willReturn(Optional.of(user));
         given(userCouponRepository.existsByUser_IdAndDiscountCoupon_Id(user.getId(), couponId)).willReturn(false);
         given(storeRepository.findByIdAndDeletedFalse(storeId)).willReturn(Optional.of(store));
@@ -158,11 +181,14 @@ class UserCouponServiceTest {
     }
 
     @Test
-    void 기존에_발급받은_쿠폰은_쿠폰_발급에_실패한다() {
+    void 기존에_발급받은_쿠폰은_쿠폰_발급에_실패한다() throws InterruptedException {
 
         Long issuedCouponId = 2L;
 
+        given(redissonClient.getLock(anyString())).willReturn(rLock);
+        given(rLock.tryLock(anyLong(), anyLong(), any(TimeUnit.class))).willReturn(true);
         given(userRepository.findByEmail(principal.getUsername())).willReturn(Optional.of(user));
+        given(discountCouponRepository.findById(issuedCouponId)).willReturn(Optional.of(issuedDiscountCoupon));
         given(userCouponRepository.existsByUser_IdAndDiscountCoupon_Id(user.getId(), issuedCouponId)).willReturn(true);
 
         ApiException exception = assertThrows(ApiException.class,

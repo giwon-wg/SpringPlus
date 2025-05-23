@@ -143,7 +143,7 @@ public enum ErrorStatus implements BaseErrorCode {
     COUPON_NOT_FOUND(HttpStatus.NOT_FOUND, "C007", "해당 쿠폰이 없습니다."),
     COUPON_ALREADY_ISSUED(HttpStatus.CONFLICT, "C008", "이미 발급받은 쿠폰입니다."),
     COUPON_OUT_OF_STOCK(HttpStatus.BAD_REQUEST, "C004", "쿠폰의 수량이 소진되었습니다."),
-
+    COUPON_BAD_REQUEST(HttpStatus.BAD_REQUEST, "C004", "잘못된 요청입니다."),
 
 
 
