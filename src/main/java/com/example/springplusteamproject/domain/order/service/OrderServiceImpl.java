@@ -4,34 +4,37 @@ import com.example.springplusteamproject.common.exception.ApiException;
 import com.example.springplusteamproject.common.status.ErrorStatus;
 import com.example.springplusteamproject.domain.coupon.entity.UserCoupon;
 import com.example.springplusteamproject.domain.coupon.repository.UserCouponRepository;
-import com.example.springplusteamproject.domain.coupon.service.DiscountCouponService;
 import com.example.springplusteamproject.domain.flower.entity.Flower;
-import com.example.springplusteamproject.domain.flower.repository.FlowerRepository;
 import com.example.springplusteamproject.domain.order.dto.request.OrderItemRequestDTO;
 import com.example.springplusteamproject.domain.order.dto.request.OrderRequestDTO;
 import com.example.springplusteamproject.domain.order.dto.response.OrderResponseDTO;
 import com.example.springplusteamproject.domain.order.entity.Order;
 import com.example.springplusteamproject.domain.order.entity.OrderItem;
+import com.example.springplusteamproject.domain.order.repository.FlowerPessiMisticLockRepository;
 import com.example.springplusteamproject.domain.order.repository.OrderRepository;
 import com.example.springplusteamproject.domain.order.vo.Price;
 import com.example.springplusteamproject.domain.user.entity.User;
 import com.example.springplusteamproject.domain.user.repository.UserRepository;
 import com.example.springplusteamproject.security.CustomUserPrincipal;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
-    private final FlowerRepository flowerRepository;
+    private final FlowerPessiMisticLockRepository flowerPessiMisticLockRepository;
     private final UserCouponRepository userCouponRepository;
     private final UserRepository userRepository;
+    private final FlowerLockService flowerPessiMisticLockService;
+    private final FlowerRedisson flowerRedisson;
 
     //주문하기
     @Override
@@ -51,9 +54,15 @@ public class OrderServiceImpl implements OrderService {
             //수량
             int quantity = item.getQuantity();
 
-            Flower foundFlower = flowerRepository.findById(flowerId).orElseThrow(() -> new ApiException(ErrorStatus.ORDER_FLOWER_NOTFOUND));
-            //재고감소
-            foundFlower.decreaseStock(quantity);
+            /*재고 감소 */
+            /* 비관락 적용*/
+//            Flower foundFlower = flowerPessiMisticLockService.decreaseStock(flowerId, quantity);
+            /* 비관락 재시도 적용*/
+//            Flower foundFlower = flowerPessiMisticLockService.decreaseRetryStock(flowerId, quantity);
+
+            // 분산락
+//            Flower foundFlower =flowerRedisson.decreaseStock(flowerId,quantity);
+            Flower foundFlower =flowerRedisson.decreaseStock(flowerId,quantity);
 
 
             //단가
