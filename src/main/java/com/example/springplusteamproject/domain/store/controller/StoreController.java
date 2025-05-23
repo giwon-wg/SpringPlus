@@ -22,6 +22,7 @@ import com.example.springplusteamproject.domain.store.dto.request.StoreCheckName
 import com.example.springplusteamproject.domain.store.dto.request.StoreRequestDto;
 import com.example.springplusteamproject.domain.store.dto.response.StoreListResponseDto;
 import com.example.springplusteamproject.domain.store.dto.response.StoreResponseDto;
+import com.example.springplusteamproject.domain.store.service.PopularStoreService;
 import com.example.springplusteamproject.domain.store.service.StoreService;
 import com.example.springplusteamproject.security.CustomUserPrincipal;
 
@@ -37,6 +38,7 @@ import lombok.RequiredArgsConstructor;
 public class StoreController {
 
     private final StoreService storeService;
+    private final PopularStoreService popularStoreService;
 
     @Operation(
         summary = "가게 생성",
@@ -104,5 +106,15 @@ public class StoreController {
     ) {
         String message = storeService.checkingName(dto);
         return ApiResponse.onSuccess(SuccessStatus.STORE_SUCCESS, message);
+    }
+
+    @Operation(
+        summary = "인기 순위 조회",
+        description = "인기 순위 top10을 조회 합니다.",
+        security = {@SecurityRequirement(name = "bearerAuth")}
+    )
+    @GetMapping("/stores/popular")
+    public ResponseEntity<ApiResponse<List<StoreResponseDto>>> getPopularStores() {
+        return ApiResponse.onSuccess(SuccessStatus.STORE_SUCCESS, popularStoreService.getPopularStoresFromCache());
     }
 }
