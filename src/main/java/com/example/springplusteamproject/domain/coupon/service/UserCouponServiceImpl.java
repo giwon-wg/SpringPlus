@@ -43,9 +43,7 @@ public class UserCouponServiceImpl implements UserCouponService {
         User user = validateActivateUser(principal.getUsername());
 
         validateActivateStore(storeId);
-
-        List<Long> couponIds = userCouponRepository.findHavingCouponIds(user.getId(), storeId);
-        List<DiscountCoupon> issuableCouponList = discountCouponRepository.findIssuableCouponList(couponIds, storeId);
+        List<DiscountCoupon> issuableCouponList = discountCouponRepository.findIssuableCouponList(user.getId(), storeId);
 
         Long endTime = System.nanoTime();
         Long totalTIme = (endTime - startTime) / 1_000_000;

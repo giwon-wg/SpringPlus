@@ -115,8 +115,7 @@ class UserCouponServiceTest {
 
         given(userRepository.findByEmail(principal.getUsername())).willReturn(Optional.of(user));
         given(storeRepository.findByIdAndDeletedFalse(storeId)).willReturn(Optional.of(store));
-        given(userCouponRepository.findHavingCouponIds(user.getId(), storeId)).willReturn(List.of(2L));
-        given(discountCouponRepository.findIssuableCouponList(List.of(2L), storeId)).willReturn(
+        given(discountCouponRepository.findIssuableCouponList(user.getId(), storeId)).willReturn(
             List.of(discountCoupon));
 
         List<IssuableUserCouponResponseDto> responseDtos = userCouponService.findIssuableUserCoupons(storeId,
