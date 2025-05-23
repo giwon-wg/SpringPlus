@@ -68,19 +68,6 @@ public class StoreTransactionalService {
         Store saved = storeRepository.save(store);
         storeRepository.flush();
         log.info("[Store - 가게 생성] 가게 생성 성공, userId={} storeId={}", principal.getId(), saved.getId());
-        return toResponseDto(saved);
-    }
-
-    private StoreResponseDto toResponseDto(Store store) {
-        return StoreResponseDto.builder()
-            .id(store.getId())
-            .name(store.getName())
-            .address(store.getAddress())
-            .phoneNumber(store.getPhoneNumber())
-            .image(store.getImage())
-            .minOrderPrice(store.getMinOrderPrice())
-            .openTime(store.getOpenTime())
-            .closeTime(store.getCloseTime())
-            .build();
+        return StoreResponseDto.fromEntity(saved);
     }
 }

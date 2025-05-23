@@ -22,6 +22,7 @@ import com.example.springplusteamproject.domain.store.dto.request.StoreCheckName
 import com.example.springplusteamproject.domain.store.dto.request.StoreRequestDto;
 import com.example.springplusteamproject.domain.store.dto.response.StoreListResponseDto;
 import com.example.springplusteamproject.domain.store.dto.response.StoreResponseDto;
+import com.example.springplusteamproject.domain.store.service.PopularStoreService;
 import com.example.springplusteamproject.domain.store.service.StoreService;
 import com.example.springplusteamproject.security.CustomUserPrincipal;
 
@@ -37,6 +38,7 @@ import lombok.RequiredArgsConstructor;
 public class StoreController {
 
     private final StoreService storeService;
+    private final PopularStoreService popularStoreService;
 
     @Operation(
         summary = "가게 생성",
@@ -61,7 +63,7 @@ public class StoreController {
     )
     @PreAuthorize("hasAnyRole('OWNER')")
     @DeleteMapping("/owner/stores")
-    public ResponseEntity<ApiResponse<StoreResponseDto>> deletedStore(
+    public ResponseEntity<ApiResponse<StoreResponseDto>> deleteStore(
         @AuthenticationPrincipal CustomUserPrincipal principal
     ) {
         storeService.deleteStore(principal);
@@ -106,15 +108,13 @@ public class StoreController {
         return ApiResponse.onSuccess(SuccessStatus.STORE_SUCCESS, message);
     }
 
-
-    // @Operation(
-    //     summary = "가게 조회",
-    //     description = "모든 가게를 조회합니다.",
-    //     security = {@SecurityRequirement(name = "bearerAuth")}
-    // )
-    // @GetMapping("/stores")
-    @Deprecated
-    public ResponseEntity<ApiResponse<List<StoreListResponseDto>>> findStore() {
-        return ApiResponse.onSuccess(SuccessStatus.STORE_SUCCESS, storeService.getAllStores());
+    @Operation(
+        summary = "인기 순위 조회",
+        description = "인기 순위 top10을 조회 합니다.",
+        security = {@SecurityRequirement(name = "bearerAuth")}
+    )
+    @GetMapping("/stores/popular")
+    public ResponseEntity<ApiResponse<List<StoreResponseDto>>> getPopularStores() {
+        return ApiResponse.onSuccess(SuccessStatus.STORE_SUCCESS, popularStoreService.getPopularStoresFromCache());
     }
 }
