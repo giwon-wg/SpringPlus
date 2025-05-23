@@ -39,7 +39,7 @@ public class StoreServiceImpl implements StoreService {
     private final RedissonClient redissonClient;
     private final UserRepository userRepository;
     private final StoreTransactionalService storeTransactionalService;
-    private final RedisTemplate<Object, Object> redisTemplate;
+    private final RedisTemplate<String, Long> redisTemplate;
 
     @Override
     public StoreResponseDto createStore(StoreRequestDto dto, CustomUserPrincipal principal) {
@@ -102,12 +102,13 @@ public class StoreServiceImpl implements StoreService {
     @Transactional(readOnly=true)
     @Override
     public StoreResponseDto getStoreById(Long id) {
-        increaseViewCount(id);
+
         Store store = storeRepository.findByIdAndDeletedFalse(id)
             .orElseThrow(() -> {
                 log.warn("[Store - ID 기반 조회] Id에 해당하는 가게 없음, storeId: {}", id);
                 return new ApiException(ErrorStatus.STORE_NOT_FOUND);
             });
+        increaseViewCount(id);
         log.info("[Store - 가게 단건 조회] 가게 단건 조회 성공, storeId: {}", id);
         return StoreResponseDto.fromEntity(store);
     }
