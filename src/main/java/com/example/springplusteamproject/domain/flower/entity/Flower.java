@@ -4,7 +4,6 @@ import static com.example.springplusteamproject.common.status.ErrorStatus.FLOWER
 
 import com.example.springplusteamproject.common.entity.BaseEntity;
 import com.example.springplusteamproject.common.exception.ApiException;
-import com.example.springplusteamproject.common.status.ErrorStatus;
 import com.example.springplusteamproject.domain.flower.dto.request.FlowerRequestDto;
 import com.example.springplusteamproject.domain.flower.enums.Color;
 import com.example.springplusteamproject.domain.flower.enums.Season;
@@ -32,7 +31,7 @@ import org.hibernate.annotations.ColumnDefault;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Builder(toBuilder = true)
 @Table(name = "flower")
 public class Flower extends BaseEntity {
 
