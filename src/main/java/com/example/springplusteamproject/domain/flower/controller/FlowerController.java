@@ -7,6 +7,7 @@ import com.example.springplusteamproject.common.response.ApiResponse;
 import com.example.springplusteamproject.domain.flower.dto.request.FlowerRequestDto;
 import com.example.springplusteamproject.domain.flower.dto.response.FlowerResponseDto;
 import com.example.springplusteamproject.domain.flower.dto.response.FlowerSearchResponseDto;
+import com.example.springplusteamproject.domain.flower.enums.SearchType;
 import com.example.springplusteamproject.domain.flower.service.FlowerService;
 import com.example.springplusteamproject.security.CustomUserPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
@@ -140,7 +141,7 @@ public class FlowerController {
         @RequestParam(defaultValue = "10") int size
     ) {
         return ApiResponse.onSuccess(FLOWER_OPERATION_SUCCESS,
-            flowerService.searchFlowers(keyword, principal.getId(), page, size));
+            flowerService.searchFlowersV2(keyword, principal.getId(), page, size));
     }
 
     @Operation(
@@ -150,11 +151,9 @@ public class FlowerController {
     )
     @GetMapping("/flowers/search/top10")
     public ResponseEntity<ApiResponse<List<FlowerSearchResponseDto>>> getTop10Keywords(
-        @RequestParam(required = false) Integer year,
-        @RequestParam(required = false) Integer month,
-        @RequestParam(required = false) Integer day
+        @RequestParam SearchType type
     ) {
         return ApiResponse.onSuccess(FLOWER_OPERATION_SUCCESS,
-            flowerService.getTop10Keywords(year, month, day));
+            flowerService.getTop10Keywords(type));
     }
 }

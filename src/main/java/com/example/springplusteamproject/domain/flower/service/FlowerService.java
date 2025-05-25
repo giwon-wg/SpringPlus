@@ -4,6 +4,7 @@ import com.example.springplusteamproject.domain.flower.dto.request.FlowerRequest
 import com.example.springplusteamproject.domain.flower.dto.response.FlowerResponseDto;
 import com.example.springplusteamproject.domain.flower.dto.response.FlowerResponseDto.Get;
 import com.example.springplusteamproject.domain.flower.dto.response.FlowerSearchResponseDto;
+import com.example.springplusteamproject.domain.flower.enums.SearchType;
 import java.util.List;
 import org.springframework.data.domain.Page;
 
@@ -32,6 +33,6 @@ public interface FlowerService {
     Page<Get> searchFlowersV2(String keyword, Long userId, int page, int size);
 
     // 인기 검색어 조회
-    List<FlowerSearchResponseDto> getTop10Keywords(Integer year, Integer month, Integer day);
+    List<FlowerSearchResponseDto> getTop10Keywords(SearchType type);
 
 }
