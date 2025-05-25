@@ -149,12 +149,4 @@ public class UserCouponServiceImpl implements UserCouponService {
             throw new ApiException(ErrorStatus.COUPON_ALREADY_ISSUED);
         }
     }
-
-    private UserCoupon createUserCoupon(User user, DiscountCoupon discountCoupon) {
-        return UserCoupon.builder()
-            .user(user)
-            .discountCoupon(discountCoupon)
-            .isUsed(false)
-            .build();
-    }
 }

@@ -11,12 +11,14 @@ public interface DiscountCouponRepository extends JpaRepository<DiscountCoupon, 
 
     @Query("""
 SELECT dc FROM DiscountCoupon dc
-LEFT JOIN UserCoupon uc ON dc.id = uc.discountCoupon.id
-AND uc.user.id = :userId
-AND uc.isUsed = false
 WHERE dc.store.id = :storeId
 AND dc.isDeleted = false
-AND uc.id IS NULL
+AND NOT EXISTS (
+    SELECT 1 FROM UserCoupon uc
+    WHERE uc.discountCoupon.id = dc.id
+    AND uc.user.id = :userId
+    AND uc.isUsed = false
+)
 """)
     List<DiscountCoupon> findIssuableCouponList(@Param("userId") Long userId,
                                                  @Param("storeId") Long storeId);
