@@ -115,15 +115,15 @@ class UserCouponServiceTest {
 
         given(userRepository.findByEmail(principal.getUsername())).willReturn(Optional.of(user));
         given(storeRepository.findByIdAndDeletedFalse(storeId)).willReturn(Optional.of(store));
-        given(discountCouponRepository.findIssuableCouponList(user.getId(), storeId)).willReturn(
-            List.of(discountCoupon));
+        given(discountCouponRepository.findIssuableCouponDtoList(user.getId(), storeId)).willReturn(
+            List.of(IssuableUserCouponResponseDto.from(discountCoupon)));
 
         List<IssuableUserCouponResponseDto> responseDtos = userCouponService.findIssuableUserCoupons(storeId,
             principal);
 
         assertThat(responseDtos).hasSize(1);
-        assertThat(responseDtos.get(0).getCouponName()).isEqualTo(discountCoupon.getCouponName());
-        assertThat(responseDtos.get(0).getDiscount()).isEqualTo(discountCoupon.getDiscount());
+        assertThat(responseDtos.get(0).couponName()).isEqualTo(discountCoupon.getCouponName());
+        assertThat(responseDtos.get(0).discount()).isEqualTo(discountCoupon.getDiscount());
     }
 
     @Test
@@ -139,8 +139,8 @@ class UserCouponServiceTest {
         IssuableUserCouponResponseDto responseDto = userCouponService.findIssuableUserCoupon(storeId, couponId,
             principal);
 
-        assertThat(responseDto.getCouponName()).isEqualTo(discountCoupon.getCouponName());
-        assertThat(responseDto.getDiscount()).isEqualTo(discountCoupon.getDiscount());
+        assertThat(responseDto.couponName()).isEqualTo(discountCoupon.getCouponName());
+        assertThat(responseDto.discount()).isEqualTo(discountCoupon.getDiscount());
     }
 
     @Test
