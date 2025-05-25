@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.redis.core.RedisTemplate;
 
 import com.example.springplusteamproject.common.config.RedissonConfig;
 import com.example.springplusteamproject.common.exception.ApiException;
@@ -58,6 +59,9 @@ class StoreServiceTest {
     @Mock
     private StoreTransactionalService storeTransactionalService;
 
+    @Mock
+    private RedisTemplate<String, Long> longRedisTemplate;
+
     private StoreServiceImpl storeService;
 
     private Store store;
@@ -75,7 +79,7 @@ class StoreServiceTest {
 
     @BeforeEach
     void setUp() {
-        storeService = new StoreServiceImpl(storeRepository, redissonClient, userRepository, storeTransactionalService);
+        storeService = new StoreServiceImpl(storeRepository, redissonClient, storeTransactionalService, longRedisTemplate);
 
         user = createTestUser();
         store = createTestStore(user);

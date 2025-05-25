@@ -24,7 +24,6 @@ import com.example.springplusteamproject.domain.store.dto.response.StoreListResp
 import com.example.springplusteamproject.domain.store.dto.response.StoreResponseDto;
 import com.example.springplusteamproject.domain.store.entity.Store;
 import com.example.springplusteamproject.domain.store.repository.StoreRepository;
-import com.example.springplusteamproject.domain.user.repository.UserRepository;
 import com.example.springplusteamproject.security.CustomUserPrincipal;
 
 import lombok.RequiredArgsConstructor;
@@ -37,7 +36,6 @@ public class StoreServiceImpl implements StoreService {
 
     private final StoreRepository storeRepository;
     private final RedissonClient redissonClient;
-    private final UserRepository userRepository;
     private final StoreTransactionalService storeTransactionalService;
     private final RedisTemplate<String, Long> longRedisTemplate;
 
