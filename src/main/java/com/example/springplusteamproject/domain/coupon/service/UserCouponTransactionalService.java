@@ -9,8 +9,6 @@ import com.example.springplusteamproject.domain.coupon.repository.DiscountCoupon
 import com.example.springplusteamproject.domain.coupon.repository.UserCouponRepository;
 import com.example.springplusteamproject.domain.store.repository.StoreRepository;
 import com.example.springplusteamproject.domain.user.entity.User;
-import com.example.springplusteamproject.domain.user.repository.UserRepository;
-import com.example.springplusteamproject.security.CustomUserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,7 +22,6 @@ public class UserCouponTransactionalService {
     private final UserCouponRepository userCouponRepository;
 
     private final DiscountCouponRepository discountCouponRepository;
-
 
     @Transactional
     public UserCouponIssueResponseDto issueUserCoupon(Long storeId, Long couponId, User user) {
