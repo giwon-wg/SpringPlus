@@ -12,9 +12,13 @@ import com.example.springplusteamproject.domain.user.repository.UserRepository;
 import com.example.springplusteamproject.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.concurrent.TimeUnit;
 
 @Slf4j(topic = "AuthService")
 @Service
@@ -24,41 +28,56 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final RedissonClient redissonClient;
+    private final AuthTransactionalService authTransactionalService;
+
 
     @Override
-    @Transactional
     public SignupResponseDto signup(SignupRequestDto requestDto) {
 
-        if (userRepository.existsByEmail(requestDto.getEmail())) {
-            log.warn("중복 이메일 요청 감지: {}", requestDto.getEmail());
-            throw new ApiException(ErrorStatus.USER_EXIST);
-        }
+        String emailLockKey = "email-lock:id : " + requestDto.getEmail();
+        String nicknameLockKey = "nickname-lock: id: " + requestDto.getNickname();
 
-        if (userRepository.existsByNickname(requestDto.getNickname())) {
-            log.warn("중복 닉네임 요청 감지: {}", requestDto.getNickname());
-            throw new ApiException(ErrorStatus.USER_EXIST);
-        }
+        RLock emailLock = redissonClient.getLock(emailLockKey);
+        RLock nicknameLock = redissonClient.getLock(nicknameLockKey);
 
-        if ("OWNER".equalsIgnoreCase(requestDto.getUserRole())) {
-            if (requestDto.getBrn() == null || requestDto.getBrn().trim().isEmpty()) {
-                log.warn("사업자 등록번호 누락: UserRole = {}", requestDto.getUserRole());
-                throw new ApiException(ErrorStatus.USER_OWNER_BRN_REQUIRED);
+        boolean emailLocked = false;
+        boolean nicknameLocked = false;
+
+        try {
+            emailLocked = emailLock.tryLock(300, 1000, TimeUnit.MILLISECONDS);
+            if (!emailLocked) throw new IllegalStateException("이메일 락 획득 실패");
+
+            nicknameLocked = nicknameLock.tryLock(300, 1000, TimeUnit.MILLISECONDS);
+            if (!nicknameLocked) throw new IllegalStateException("닉네임 락 획득 실패");
+
+            // 이메일, 닉네임 둘 다 락 잡은 상태에서 비즈니스 로직(회원가입) 실행
+            return authTransactionalService.signup(requestDto);
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.warn("락 획득 실패: {}, {}", emailLockKey, nicknameLockKey);
+            throw new ApiException(ErrorStatus.FORBIDDEN);
+        } finally {
+            // 개별 락 해제(락 보유 시에만)
+            if (nicknameLocked && nicknameLock.isHeldByCurrentThread()) {
+                nicknameLock.unlock();
+            }
+            if (emailLocked && emailLock.isHeldByCurrentThread()) {
+                emailLock.unlock();
             }
         }
+    };
 
-        String encodedPassword = passwordEncoder.encode(requestDto.getPassword());
-        UserRole userRole = UserRole.of(requestDto.getUserRole());
-        User newUser = buildUser(requestDto, encodedPassword, userRole); //buildUser는 아래에 메서드로 구현함
-
-        User savedUser = userRepository.save(newUser);
-        return SignupResponseDto.from(savedUser);
-    }
 
     @Override
     @Transactional(readOnly = true)
     public LoginResponseDto login(LoginRequestDto requestDto) {
         User user = userRepository.findByEmail(requestDto.getEmail())
-            .orElseThrow( ()-> new ApiException(ErrorStatus.USER_NOT_FOUND));
+            .orElseThrow( ()-> {
+                log.warn("입력한 이메일에 해당하는 유저 없음: User Email: {}", requestDto.getEmail());
+                return new ApiException(ErrorStatus.USER_NOT_FOUND);
+            });
 
         user.validateDelete();
 

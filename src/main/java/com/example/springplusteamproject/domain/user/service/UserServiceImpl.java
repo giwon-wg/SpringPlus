@@ -50,7 +50,10 @@ public class UserServiceImpl implements UserService{
     @Transactional(readOnly = true)
     public UserResponseDto findUserByEmail(String email) {
         User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new ApiException(ErrorStatus.USER_NOT_FOUND));
+            .orElseThrow(() -> {
+                log.warn("입력한 이메일에 해당하는 유저 없음: User Email: {}", email);
+                return new ApiException(ErrorStatus.USER_NOT_FOUND);
+            });
 
         user.validateDelete();
 
@@ -61,7 +64,10 @@ public class UserServiceImpl implements UserService{
     @Transactional
     public void deleteMyAccount(CustomUserPrincipal principal) {
         User user = userRepository.findByEmail(principal.getUsername())
-            .orElseThrow(()-> new ApiException(ErrorStatus.USER_NOT_FOUND));
+            .orElseThrow(()-> {
+                log.warn("요청한 유저의 Email이 DB에서 조회되지 않음: User Email: {}", principal.getUsername());
+                return new ApiException(ErrorStatus.USER_NOT_FOUND);
+            });
 
         user.validateDelete(); // 유저 삭제 여부 검증
         user.delete(); // 유저 삭제(Soft Delete)

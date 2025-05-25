@@ -5,11 +5,14 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.example.springplusteamproject.domain.store.entity.Store;
+
+import jakarta.persistence.LockModeType;
 
 @Repository
 public interface StoreRepository extends JpaRepository<Store, Long> {
@@ -28,6 +31,11 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
 
     // 소프트 삭제를 고려한 유저 ID로 조회
     Optional<Store> findByUserIdAndDeletedFalse(Long userId);
+
+    // 비관적 락 적용
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT s FROM Store s WHERE  s.user.id = :userId AND s.deleted = false")
+    Optional<Store> findByUserIdAndDeletedFalseForUpdate(@Param("userId") Long userId);
 
     // 커서기반 페이징 전체 조회
     @Query("SELECT s FROM Store s WHERE s.deleted = false "
