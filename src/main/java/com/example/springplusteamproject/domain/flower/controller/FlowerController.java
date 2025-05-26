@@ -108,7 +108,6 @@ public class FlowerController {
         @AuthenticationPrincipal CustomUserPrincipal principal
     ) {
         flowerService.deleteFlower(storeId, flowerId, principal.getId());
-        System.out.println("테스트");
         return ApiResponse.onSuccess(FLOWER_OPERATION_SUCCESS, null);
     }
 
