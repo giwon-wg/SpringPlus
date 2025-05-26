@@ -10,25 +10,41 @@ import com.example.springplusteamproject.domain.flower.dto.request.FlowerRequest
 import com.example.springplusteamproject.domain.flower.dto.response.FlowerResponseDto;
 import com.example.springplusteamproject.domain.flower.dto.response.FlowerResponseDto.Create;
 import com.example.springplusteamproject.domain.flower.dto.response.FlowerResponseDto.Get;
+import com.example.springplusteamproject.domain.flower.dto.response.FlowerSearchResponseDto;
 import com.example.springplusteamproject.domain.flower.entity.Flower;
+import com.example.springplusteamproject.domain.flower.entity.FlowerSearchLog;
+import com.example.springplusteamproject.domain.flower.enums.SearchType;
 import com.example.springplusteamproject.domain.flower.repository.FlowerRepository;
+import com.example.springplusteamproject.domain.flower.repository.FlowerSearchLogRepository;
 import com.example.springplusteamproject.domain.store.entity.Store;
 import com.example.springplusteamproject.domain.store.repository.StoreRepository;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
+import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FlowerServiceImpl implements FlowerService {
 
     private final StoreRepository storeRepository;
     private final FlowerRepository flowerRepository;
+    private final FlowerSearchLogRepository flowerSearchLogRepository;
+
+    private final StringRedisTemplate redisTemplate;
 
     @Override
     @Transactional
@@ -88,6 +104,74 @@ public class FlowerServiceImpl implements FlowerService {
         flower.setDeleted();
     }
 
+    @Override
+    @Transactional
+    public Page<Get> searchFlowers(String keyword, Long userId, int page, int size) {
+
+        // 검색
+        Pageable pageable = PageRequest.of(page - 1, size);
+        Page<Flower> flowers = flowerRepository.findByNameContainingAndDeletedFalse(keyword, pageable);
+
+        // 검색 로그 저장
+        FlowerSearchLog log = new FlowerSearchLog(userId, keyword);
+        flowerSearchLogRepository.save(log);
+
+        return flowers.map(FlowerResponseDto.Get::toDto);
+    }
+
+    @Cacheable(
+        cacheNames = "searchFlowersResults",
+        key = "'search:' + #keyword + ':' + #page + ':' + #size",
+        unless = "#result.content.isEmpty()"
+    )
+    @Override
+    @Transactional
+    public Page<Get> searchFlowersV2(String keyword, Long userId, int page, int size) {
+
+        // 검색
+        Pageable pageable = PageRequest.of(page - 1, size);
+        Page<Flower> flowers = flowerRepository.findByNameContainingAndDeletedFalse(keyword, pageable);
+
+        // 실제 사용자가 검색할 때만 로그 저장
+        if (userId != null) {
+            // 검색 로그 저장 - RDB
+            FlowerSearchLog log = new FlowerSearchLog(userId, keyword);
+            flowerSearchLogRepository.save(log);
+
+            // 검색 로그 저장 - Redis
+            increaseKeywordScore(keyword);
+        }
+
+        return flowers.map(FlowerResponseDto.Get::toDto);
+    }
+
+    @Override
+    public List<FlowerSearchResponseDto> getTop10Keywords(SearchType type) {
+
+        // key 생성
+        String key = type.getRedisKey();
+
+        // 상위 10개 조회
+        Set<TypedTuple<String>> resultSet = redisTemplate.opsForZSet().reverseRangeWithScores(key, 0, 9);
+
+        // 조회 결과가 없을 경우 빈 배열 반환
+        if (resultSet == null || resultSet.isEmpty()) {
+            return List.of();
+        }
+
+        AtomicInteger rankCounter = new AtomicInteger(1);
+
+        // 응답 DTO로 변환
+        return resultSet.stream()
+            .map(
+                tuple -> new FlowerSearchResponseDto(
+                    rankCounter.getAndIncrement(),
+                    tuple.getValue(),
+                    tuple.getScore().intValue()
+                )
+            ).collect(Collectors.toList());
+    }
+
     private Store checkStoreAuth(Long storeId, Long userId) {
 
         // 가게 조회
@@ -114,5 +198,19 @@ public class FlowerServiceImpl implements FlowerService {
         }
 
         return flower;
+    }
+
+    private void increaseKeywordScore(String keyword) {
+        LocalDate today = LocalDate.now();
+        YearMonth currentMonth = YearMonth.from(today);
+        int currentYear = today.getYear();
+
+        String dailyKey = "popular:keywords:daily:" + today;
+        String monthlyKey = "popular:keywords:monthly:" + currentMonth;
+        String yearlyKey = "popular:keywords:yearly:" + currentYear;
+
+        redisTemplate.opsForZSet().incrementScore(dailyKey, keyword, 1);
+        redisTemplate.opsForZSet().incrementScore(monthlyKey, keyword, 1);
+        redisTemplate.opsForZSet().incrementScore(yearlyKey, keyword, 1);
     }
 }
