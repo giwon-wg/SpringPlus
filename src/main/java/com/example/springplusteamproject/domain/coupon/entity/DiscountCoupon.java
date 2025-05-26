@@ -23,7 +23,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @Entity
 @Builder
-@Table(name = "discount_coupon", indexes = @Index(name = "idx_store_deleted_id", columnList = "store_id, is_deleted, id"))
+@Table(name = "discount_coupon", indexes = @Index(name = "idx_discount_coupon_store_deleted ", columnList = "store_id, is_deleted"))
 @NoArgsConstructor
 @AllArgsConstructor
 public class DiscountCoupon extends BaseEntity {
